@@ -1,4 +1,5 @@
 import React, { useState, useEffect, forwardRef, useImperativeHandle, useCallback } from 'react';
+import { Search, Play, ChevronDown } from 'lucide-react';
 
 // ========== Interfaces ==========
 interface Project {
@@ -35,249 +36,6 @@ export interface ProjectSelectorRef {
   confirmSubprojectSelection: () => void;
 }
 
-// ========== Helper Components ==========
-const ProjectSearch: React.FC<{
-  projects: Project[];
-  selectedProjectId: string;
-  onProjectSelect: (projectId: string) => void;
-}> = React.memo(({ projects, selectedProjectId, onProjectSelect }) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [isOpen, setIsOpen] = useState(false);
-  
-  // Debug logging
-  console.log('ProjectSearch - projects:', projects);
-  console.log('ProjectSearch - selectedProjectId:', selectedProjectId);
-  
-  const filteredProjects = React.useMemo(() => 
-    projects.filter(project =>
-      project.name.toLowerCase().includes(searchTerm.toLowerCase())
-    ), [projects, searchTerm]);
-
-  const selectedProject = projects.find(p => p.id === selectedProjectId);
-
-  const handleProjectClick = useCallback((projectId: string) => {
-    onProjectSelect(projectId);
-    setIsOpen(false);
-    setSearchTerm('');
-  }, [onProjectSelect]);
-
-  return (
-    <div className="relative group">
-      <div className="flex items-center relative">
-        <input
-          type="text"
-          placeholder={selectedProject ? `Selected: ${selectedProject.name}` : "Search projects..."}
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          onFocus={() => setIsOpen(true)}
-          onBlur={() => setTimeout(() => setIsOpen(false), 150)}
-          className="w-full py-3 pl-12 pr-4 bg-gray-50/80 dark:bg-gray-800/50 rounded-xl border-0 focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-gray-900/10 dark:focus:ring-gray-100/20 outline-none transition-all duration-300 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 text-sm font-medium backdrop-blur-sm"
-        />
-        <svg 
-          xmlns="http://www.w3.org/2000/svg" 
-          className="h-5 w-5 text-gray-400 dark:text-gray-500 absolute left-4 transition-colors duration-200 group-focus-within:text-gray-600 dark:group-focus-within:text-gray-300" 
-          fill="none" 
-          viewBox="0 0 24 24" 
-          stroke="currentColor"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-      </div>
-
-      {/* Show selected project info */}
-      {selectedProject && !isOpen && (
-        <div className="mt-2 p-2 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-          <div className="text-sm text-green-700 dark:text-green-300">
-            <span className="font-medium">Selected:</span> {selectedProject.name}
-          </div>
-        </div>
-      )}
-
-      {/* Show available projects count when no project is selected */}
-      {!selectedProject && !isOpen && projects.length > 0 && (
-        <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-          <div className="text-sm text-blue-700 dark:text-blue-300">
-            <span className="font-medium">Available:</span> {projects.length} projects - Click to select
-          </div>
-        </div>
-      )}
-
-      {isOpen && (
-        <div className="absolute z-20 w-full mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.3)] border border-gray-100 dark:border-gray-700 max-h-64 overflow-y-auto backdrop-blur-xl animate-scale-in">
-          {filteredProjects.length > 0 ? (
-            filteredProjects.map((project) => (
-              <div
-                key={project.id}
-                className={`px-4 py-3 cursor-pointer flex items-center text-sm transition-all duration-200 ${
-                  selectedProjectId === project.id
-                    ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 font-medium'
-                    : 'hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
-                } first:rounded-t-xl last:rounded-b-xl`}
-                onClick={() => handleProjectClick(project.id)}
-              >
-                <span className="truncate">{project.name}</span>
-              </div>
-            ))
-          ) : (
-            <div className="px-4 py-6 text-gray-500 dark:text-gray-400 text-sm text-center">
-              {searchTerm ? 'No projects match your search' : 'No projects available'}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-});
-
-ProjectSearch.displayName = 'ProjectSearch';
-
-const FrequentProjects: React.FC<{
-  frequentProjects: Project[];
-  selectedProjectId: string;
-  onProjectSelect: (projectId: string) => void;
-}> = React.memo(({ frequentProjects, selectedProjectId, onProjectSelect }) => {
-  const handleProjectClick = useCallback((projectId: string) => {
-    onProjectSelect(projectId);
-  }, [onProjectSelect]);
-
-  if (frequentProjects.length === 0) {
-    return (
-      <div className="text-center py-6 text-gray-400 dark:text-gray-500 text-sm">
-        No frequent projects yet
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex flex-wrap gap-2">
-      {frequentProjects.map((project) => (
-        <button
-          key={project.id}
-          className={`px-4 py-2 rounded-lg flex items-center text-sm transition-all duration-200 font-medium ${
-            selectedProjectId === project.id
-              ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 shadow-sm'
-              : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 hover:shadow-sm'
-          } transform hover:scale-[1.02] active:scale-[0.98]`}
-          onClick={() => handleProjectClick(project.id)}
-        >
-          <span className="truncate max-w-[120px]">{project.name}</span>
-        </button>
-      ))}
-    </div>
-  );
-});
-
-FrequentProjects.displayName = 'FrequentProjects';
-
-const SubprojectSearch: React.FC<{
-  selectedProject: Project;
-  selectedSubprojectId: string;
-  onSubprojectSelect: (subprojectId: string) => void;
-}> = React.memo(({ selectedProject, selectedSubprojectId, onSubprojectSelect }) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [isOpen, setIsOpen] = useState(false);
-  
-  const filteredSubprojects = React.useMemo(() => 
-    selectedProject.subprojects.filter(subproject =>
-      subproject.name.toLowerCase().includes(searchTerm.toLowerCase())
-    ), [selectedProject.subprojects, searchTerm]);
-
-  const handleSubprojectClick = useCallback((subprojectId: string) => {
-    onSubprojectSelect(subprojectId);
-    setIsOpen(false);
-    setSearchTerm('');
-  }, [onSubprojectSelect]);
-
-  return (
-    <div className="relative group">
-      <div className="flex items-center relative">
-        <input
-          type="text"
-          placeholder={`Search in ${selectedProject.name}...`}
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          onFocus={() => setIsOpen(true)}
-          onBlur={() => setTimeout(() => setIsOpen(false), 150)}
-          className="w-full py-3 pl-12 pr-4 bg-gray-50/80 dark:bg-gray-800/50 rounded-xl border-0 focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-gray-900/10 dark:focus:ring-gray-100/20 outline-none transition-all duration-300 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 text-sm font-medium backdrop-blur-sm"
-        />
-        <svg 
-          xmlns="http://www.w3.org/2000/svg" 
-          className="h-5 w-5 text-gray-400 dark:text-gray-500 absolute left-4 transition-colors duration-200 group-focus-within:text-gray-600 dark:group-focus-within:text-gray-300" 
-          fill="none" 
-          viewBox="0 0 24 24" 
-          stroke="currentColor"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-      </div>
-
-      {isOpen && (
-        <div className="absolute z-20 w-full mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.3)] border border-gray-100 dark:border-gray-700 max-h-64 overflow-y-auto backdrop-blur-xl animate-scale-in">
-          {filteredSubprojects.length > 0 ? (
-            filteredSubprojects.map((subproject) => (
-              <div
-                key={subproject.id}
-                className={`px-4 py-3 cursor-pointer flex items-center text-sm transition-all duration-200 ${
-                  selectedSubprojectId === subproject.id
-                    ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 font-medium'
-                    : 'hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
-                } first:rounded-t-xl last:rounded-b-xl`}
-                onClick={() => handleSubprojectClick(subproject.id)}
-              >
-                <span className="truncate">{subproject.name}</span>
-              </div>
-            ))
-          ) : (
-            <div className="px-4 py-6 text-gray-500 dark:text-gray-400 text-sm text-center">
-              No subprojects found
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-});
-
-SubprojectSearch.displayName = 'SubprojectSearch';
-
-const FrequentSubprojects: React.FC<{
-  frequentSubprojects: Subproject[];
-  selectedSubprojectId: string;
-  onSubprojectSelect: (subprojectId: string) => void;
-}> = React.memo(({ frequentSubprojects, selectedSubprojectId, onSubprojectSelect }) => {
-  const handleSubprojectClick = useCallback((subprojectId: string) => {
-    onSubprojectSelect(subprojectId);
-  }, [onSubprojectSelect]);
-
-  if (frequentSubprojects.length === 0) {
-    return (
-      <div className="text-center py-6 text-gray-400 dark:text-gray-500 text-sm">
-        No frequent subprojects yet
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex flex-wrap gap-2">
-      {frequentSubprojects.map((subproject) => (
-        <button
-          key={subproject.id}
-          className={`px-4 py-2 rounded-lg flex items-center text-sm transition-all duration-200 font-medium ${
-            selectedSubprojectId === subproject.id
-              ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 shadow-sm'
-              : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 hover:shadow-sm'
-          } transform hover:scale-[1.02] active:scale-[0.98]`}
-          onClick={() => handleSubprojectClick(subproject.id)}
-        >
-          <span className="truncate max-w-[120px]">{subproject.name}</span>
-        </button>
-      ))}
-    </div>
-  );
-});
-
-FrequentSubprojects.displayName = 'FrequentSubprojects';
-
 // ========== Main Component ==========
 const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
   projects,
@@ -290,112 +48,393 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
   currentFocus,
   onFocusChange
 }, ref) => {
+  const [projectSearch, setProjectSearch] = useState('');
+  const [subprojectSearch, setSubprojectSearch] = useState('');
+  const [showProjectDropdown, setShowProjectDropdown] = useState(false);
+  const [showSubprojectDropdown, setShowSubprojectDropdown] = useState(false);
+  const [projectDropdownSearch, setProjectDropdownSearch] = useState('');
+  const [subprojectDropdownSearch, setSubprojectDropdownSearch] = useState('');
   const [frequentSubprojectsEnabled, setFrequentSubprojectsEnabled] = useState(true);
   const [frequentProjects, setFrequentProjects] = useState<Project[]>([]);
   const [frequentSubprojects, setFrequentSubprojects] = useState<Subproject[]>([]);
+  const [projectUsageCount, setProjectUsageCount] = useState<Record<string, number>>({});
+  const [subprojectUsageCount, setSubprojectUsageCount] = useState<Record<string, number>>({});
+  const [combinationUsageCount, setCombinationUsageCount] = useState<Record<string, number>>({});
+
+  // Demo data - 5 projects with 4 subprojects each
+  const demoProjects: Project[] = [
+    {
+      id: '1',
+      name: 'Mobile App Development',
+      totalTime: 0,
+      subprojects: [
+        { id: '1-1', name: 'Frontend Development', totalTime: 0 },
+        { id: '1-2', name: 'Backend API', totalTime: 0 },
+        { id: '1-3', name: 'UI/UX Design', totalTime: 0 },
+        { id: '1-4', name: 'Testing & QA', totalTime: 0 }
+      ]
+    },
+    {
+      id: '2',
+      name: 'Website Redesign',
+      totalTime: 0,
+      subprojects: [
+        { id: '2-1', name: 'Design System', totalTime: 0 },
+        { id: '2-2', name: 'Content Creation', totalTime: 0 },
+        { id: '2-3', name: 'SEO Optimization', totalTime: 0 },
+        { id: '2-4', name: 'Performance Optimization', totalTime: 0 }
+      ]
+    },
+    {
+      id: '3',
+      name: 'Marketing Campaign',
+      totalTime: 0,
+      subprojects: [
+        { id: '3-1', name: 'Social Media', totalTime: 0 },
+        { id: '3-2', name: 'Email Marketing', totalTime: 0 },
+        { id: '3-3', name: 'Content Strategy', totalTime: 0 },
+        { id: '3-4', name: 'Analytics & Reporting', totalTime: 0 }
+      ]
+    },
+    {
+      id: '4',
+      name: 'Data Analytics',
+      totalTime: 0,
+      subprojects: [
+        { id: '4-1', name: 'Data Collection', totalTime: 0 },
+        { id: '4-2', name: 'Data Processing', totalTime: 0 },
+        { id: '4-3', name: 'Visualization', totalTime: 0 },
+        { id: '4-4', name: 'Insights & Reporting', totalTime: 0 }
+      ]
+    },
+    {
+      id: '5',
+      name: 'Client Onboarding',
+      totalTime: 0,
+      subprojects: [
+        { id: '5-1', name: 'Requirements Gathering', totalTime: 0 },
+        { id: '5-2', name: 'Project Planning', totalTime: 0 },
+        { id: '5-3', name: 'Documentation', totalTime: 0 },
+        { id: '5-4', name: 'Training & Support', totalTime: 0 }
+      ]
+    }
+  ];
+
+  // Use demo data if no projects provided
+  const allProjects = projects.length > 0 ? projects : demoProjects;
 
   // Debug logging
-  console.log('ProjectSelector - projects:', projects);
+  console.log('ProjectSelector - allProjects:', allProjects);
   console.log('ProjectSelector - selectedProjectId:', selectedProjectId);
 
   // Memoized selected project and subproject
   const selectedProject = React.useMemo(() => 
-    projects.find(p => p.id === selectedProjectId), [projects, selectedProjectId]);
+    allProjects.find(p => p.id === selectedProjectId), [allProjects, selectedProjectId]);
   
   const selectedSubproject = React.useMemo(() => 
     selectedProject?.subprojects.find(s => s.id === selectedSubprojectId), 
     [selectedProject, selectedSubprojectId]);
 
-  // Track frequent projects based on selection count
+  // Track frequent projects based on usage count
   useEffect(() => {
-    const sorted = [...projects]
-      .sort((a, b) => (b.totalTime || 0) - (a.totalTime || 0))
+    const sorted = [...allProjects]
+      .sort((a, b) => (projectUsageCount[b.id] || 0) - (projectUsageCount[a.id] || 0))
       .slice(0, 5);
     setFrequentProjects(sorted);
-  }, [projects]);
+  }, [allProjects, projectUsageCount]);
 
-  // Track frequent subprojects for selected project
+  // Track frequent subprojects based on usage count
   useEffect(() => {
-    if (selectedProjectId) {
-      const project = projects.find(p => p.id === selectedProjectId);
-      if (project) {
-        const sorted = [...project.subprojects]
-          .sort((a, b) => (b.totalTime || 0) - (a.totalTime || 0))
-          .slice(0, 5);
-        setFrequentSubprojects(sorted);
-      }
+    const allSubprojects = allProjects.flatMap(p => p.subprojects);
+    const sorted = [...allSubprojects]
+      .sort((a, b) => (subprojectUsageCount[b.id] || 0) - (subprojectUsageCount[a.id] || 0))
+      .slice(0, 5);
+    setFrequentSubprojects(sorted);
+  }, [allProjects, subprojectUsageCount]);
+
+  // Update search fields when selections change
+  useEffect(() => {
+    if (selectedProject) {
+      setProjectSearch(selectedProject.name);
     }
-  }, [selectedProjectId, projects]);
+  }, [selectedProject]);
+
+  useEffect(() => {
+    if (selectedSubproject) {
+      setSubprojectSearch(selectedSubproject.name);
+    }
+  }, [selectedSubproject]);
 
   const handleProjectSelect = useCallback((projectId: string) => {
-    const project = projects.find(p => p.id === projectId);
+    const project = allProjects.find(p => p.id === projectId);
     if (project) {
       onProjectSelect(projectId);
+      setProjectSearch(project.name);
+      setShowProjectDropdown(false);
+      setProjectDropdownSearch('');
+      
+      // Track usage
+      setProjectUsageCount(prev => ({
+        ...prev,
+        [projectId]: (prev[projectId] || 0) + 1
+      }));
     }
-  }, [projects, onProjectSelect]);
+  }, [allProjects, onProjectSelect]);
 
   const handleSubprojectSelect = useCallback((subprojectId: string) => {
     if (selectedProject) {
-      onSubprojectSelect(subprojectId);
+      const subproject = selectedProject.subprojects.find(s => s.id === subprojectId);
+      if (subproject) {
+        onSubprojectSelect(subprojectId);
+        setSubprojectSearch(subproject.name);
+        setShowSubprojectDropdown(false);
+        setSubprojectDropdownSearch('');
+        
+        // Track usage
+        setSubprojectUsageCount(prev => ({
+          ...prev,
+          [subprojectId]: (prev[subprojectId] || 0) + 1
+        }));
+      }
     }
   }, [selectedProject, onSubprojectSelect]);
 
+  const handleCombinationClick = useCallback((project: Project, subproject: Subproject) => {
+    handleProjectSelect(project.id);
+    handleSubprojectSelect(subproject.id);
+    
+    // Track combination usage
+    const combinationKey = `${project.id}-${subproject.id}`;
+    setCombinationUsageCount(prev => ({
+      ...prev,
+      [combinationKey]: (prev[combinationKey] || 0) + 1
+    }));
+    
+    // Timer would start here
+    console.log('Timer started for:', { project: project.name, subproject: subproject.name });
+  }, [handleProjectSelect, handleSubprojectSelect]);
+
+  const filteredProjects = React.useMemo(() => 
+    allProjects.filter(project =>
+      project.name.toLowerCase().includes(projectDropdownSearch.toLowerCase())
+    ), [allProjects, projectDropdownSearch]);
+
+  const filteredSubprojects = React.useMemo(() => 
+    selectedProject?.subprojects.filter(subproject =>
+      subproject.name.toLowerCase().includes(subprojectDropdownSearch.toLowerCase())
+    ) || [], [selectedProject, subprojectDropdownSearch]);
+
+  // Create frequent combinations based on usage
+  const frequentCombinations = React.useMemo(() => {
+    const allCombinations = [];
+    
+    // Create all possible combinations from all projects and subprojects
+    allProjects.forEach(project => {
+      project.subprojects.forEach(subproject => {
+        const combinationKey = `${project.id}-${subproject.id}`;
+        const usageCount = combinationUsageCount[combinationKey] || 0;
+        allCombinations.push({
+          project,
+          subproject,
+          usageCount,
+          combinationKey
+        });
+      });
+    });
+    
+    // Sort by usage count and take top 5
+    return allCombinations
+      .sort((a, b) => b.usageCount - a.usageCount)
+      .slice(0, 5)
+      .map(({ project, subproject }) => ({ project, subproject }));
+  }, [allProjects, combinationUsageCount]);
+
   return (
-    <div className="space-y-8 flex flex-col h-full">
-      {/* Project Search */}
-      <div className="space-y-3">
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wider">
-          Projects ({projects.length})
-        </h3>
-        <ProjectSearch
-          projects={projects}
-          selectedProjectId={selectedProjectId}
-          onProjectSelect={handleProjectSelect}
-        />
-      </div>
-      
-      {/* Frequent Projects */}
-      {frequentProjects.length > 0 && (
-        <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-            Frequent Projects
-          </h3>
-          <FrequentProjects
-            frequentProjects={frequentProjects}
-            selectedProjectId={selectedProjectId}
-            onProjectSelect={handleProjectSelect}
-          />
-        </div>
-      )}
-
-      {selectedProject && (
-        <div className="space-y-8 mt-auto">
-          {/* Subproject Search */}
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wider">
-              Subprojects
-            </h3>
-            <SubprojectSearch
-              selectedProject={selectedProject}
-              selectedSubprojectId={selectedSubprojectId}
-              onSubprojectSelect={handleSubprojectSelect}
+    <div className="w-full h-full flex flex-col">
+      {/* Search Bars */}
+      <div className="flex gap-3 mb-6">
+        <div className="flex-1 relative">
+          <div className="relative">
+                                     <input
+              type="text"
+              placeholder="Search for main project"
+              value={projectSearch}
+              onChange={(e) => setProjectSearch(e.target.value)}
+              onClick={() => setShowProjectDropdown(true)}
+              className="w-full px-4 py-3 pr-12 text-white bg-gray-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-400 transition-all duration-200 text-sm font-medium placeholder-gray-400"
             />
+            <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white">
+              <Search size={24} strokeWidth={2} />
+            </div>
           </div>
-
-          {/* Frequent Subprojects */}
-          {frequentSubprojectsEnabled && frequentSubprojects.length > 0 && (
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Frequent in {selectedProject.name}
-              </h3>
-              <FrequentSubprojects
-                frequentSubprojects={frequentSubprojects}
-                selectedSubprojectId={selectedSubprojectId}
-                onSubprojectSelect={handleSubprojectSelect}
-              />
+          
+          {showProjectDropdown && (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-10">
+              <div className="p-3 border-b border-gray-100">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Filter projects..."
+                    value={projectDropdownSearch}
+                    onChange={(e) => setProjectDropdownSearch(e.target.value)}
+                    className="w-full px-3 py-2 text-sm text-gray-900 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-transparent"
+                  />
+                  <Search size={14} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                </div>
+              </div>
+              <div className="max-h-48 overflow-y-auto">
+                {filteredProjects.length > 0 ? (
+                  filteredProjects.map((project) => (
+                    <div
+                      key={project.id}
+                      onClick={() => handleProjectSelect(project.id)}
+                      className="px-4 py-3 text-sm text-gray-900 hover:bg-gray-50 cursor-pointer transition-colors duration-150"
+                    >
+                      {project.name}
+                    </div>
+                  ))
+                ) : (
+                  <div className="px-4 py-6 text-gray-500 text-sm text-center">
+                    {projectDropdownSearch ? 'No projects match your search' : 'No projects available'}
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>
+
+        <div className="flex-1 relative">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search for subproject"
+              value={subprojectSearch}
+              onChange={(e) => setSubprojectSearch(e.target.value)}
+              onClick={() => setShowSubprojectDropdown(true)}
+              className="w-full px-4 py-3 pr-12 text-white bg-gray-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-400 transition-all duration-200 text-sm font-medium placeholder-gray-400"
+            />
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white">
+              <Search size={20} strokeWidth={2} />
+            </div>
+          </div>
+          
+          {showSubprojectDropdown && selectedProject && (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-10">
+              <div className="p-3 border-b border-gray-100">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Filter subprojects..."
+                    value={subprojectDropdownSearch}
+                    onChange={(e) => setSubprojectDropdownSearch(e.target.value)}
+                    className="w-full px-3 py-2 text-sm text-gray-900 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-transparent"
+                  />
+                  <Search size={14} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                </div>
+              </div>
+              <div className="max-h-48 overflow-y-auto">
+                {filteredSubprojects.length > 0 ? (
+                  filteredSubprojects.map((subproject) => (
+                    <div
+                      key={subproject.id}
+                      onClick={() => handleSubprojectSelect(subproject.id)}
+                      className="px-4 py-3 text-sm text-gray-900 hover:bg-gray-50 cursor-pointer transition-colors duration-150"
+                    >
+                      {subproject.name}
+                    </div>
+                  ))
+                ) : (
+                  <div className="px-4 py-6 text-gray-500 text-sm text-center">
+                    No subprojects found
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Most Frequent Projects */}
+      {frequentProjects.length > 0 && (
+        <div className="mb-6">
+          <h3 className="text-sm font-semibold text-gray-900 mb-3 uppercase tracking-wider">Most Frequent Projects</h3>
+          <div className="flex flex-wrap gap-3">
+            {frequentProjects.map((project) => (
+              <button
+                key={project.id}
+                onClick={() => handleProjectSelect(project.id)}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                  selectedProjectId === project.id
+                    ? 'bg-gray-900 text-white shadow-md'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-sm'
+                }`}
+              >
+                {project.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Most Frequent Subprojects */}
+      {frequentSubprojectsEnabled && frequentSubprojects.length > 0 && (
+        <div className="mb-6">
+          <h3 className="text-sm font-semibold text-gray-900 mb-3 uppercase tracking-wider">Most Frequent Subprojects</h3>
+          <div className="flex flex-wrap gap-3">
+            {frequentSubprojects.map((subproject) => (
+              <button
+                key={subproject.id}
+                onClick={() => handleSubprojectSelect(subproject.id)}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                  selectedSubprojectId === subproject.id
+                    ? 'bg-gray-900 text-white shadow-md'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-sm'
+                }`}
+              >
+                {subproject.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Most Frequent Combinations */}
+      {frequentCombinations.length > 0 && (
+        <div className="flex-1">
+          <h3 className="text-sm font-semibold text-gray-900 mb-3 uppercase tracking-wider">Quick Start Combinations</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {frequentCombinations.map((combination, index) => (
+              <button
+                key={index}
+                onClick={() => handleCombinationClick(combination.project, combination.subproject)}
+                className="group flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-all duration-200 hover:shadow-md border border-transparent hover:border-gray-200"
+              >
+                <div className="flex flex-col items-start">
+                  <span className="text-sm font-semibold text-gray-900 group-hover:text-gray-900">
+                    {combination.project.name}
+                  </span>
+                  <span className="text-xs text-gray-600 group-hover:text-gray-700">
+                    {combination.subproject.name}
+                  </span>
+                </div>
+                <div className="ml-2 p-1.5 bg-white group-hover:bg-gray-900 rounded-full transition-all duration-200 shadow-sm">
+                  <Play size={12} className="text-gray-600 group-hover:text-white fill-current" />
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Click outside to close dropdowns */}
+      {(showProjectDropdown || showSubprojectDropdown) && (
+        <div
+          className="fixed inset-0 z-5"
+          onClick={() => {
+            setShowProjectDropdown(false);
+            setShowSubprojectDropdown(false);
+          }}
+        />
       )}
     </div>
   );
