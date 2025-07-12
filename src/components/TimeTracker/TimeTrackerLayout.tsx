@@ -46,7 +46,7 @@ const TimeTrackerLayout: React.FC<TimeTrackerLayoutProps> = ({
     stopwatchRef
 }) => {
     return (
-        <div className="w-full min-h-[600px] rounded-2xl shadow-lg bg-white/80 dark:bg-gray-900/80 flex overflow-hidden p-8">
+        <div className="w-full min-h-[600px] rounded-b-2xl shadow-lg bg-white/80 dark:bg-gray-900/80 flex overflow-hidden px-10 py-10 mt-8">
             <div className="flex-1 flex items-center justify-center">
                 <ProjectSelector
                     ref={projectSelectorRef}
@@ -59,6 +59,7 @@ const TimeTrackerLayout: React.FC<TimeTrackerLayoutProps> = ({
                     onAddSubproject={onAddSubproject}
                     currentFocus={currentFocus}
                     onFocusChange={onFocusChange}
+                    stopwatchRef={stopwatchRef}
                 />
             </div>
             <div className="flex-1 flex items-center justify-center">

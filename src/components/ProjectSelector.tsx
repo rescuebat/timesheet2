@@ -1,5 +1,6 @@
 import React, { useState, useEffect, forwardRef, useImperativeHandle, useCallback } from 'react';
 import { Search, Play, ChevronDown } from 'lucide-react';
+import { StopwatchPanelRef } from './StopwatchPanel';
 
 // ========== Interfaces ==========
 interface Project {
@@ -25,6 +26,7 @@ interface ProjectSelectorProps {
   onAddSubproject: (projectId: string, subprojectName: string) => void;
   currentFocus?: 'project' | 'subproject' | 'timer';
   onFocusChange?: (focus: 'project' | 'subproject' | 'timer') => void;
+  stopwatchRef?: React.MutableRefObject<StopwatchPanelRef | null>;
 }
 
 export interface ProjectSelectorRef {
@@ -46,7 +48,8 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
   onAddProject,
   onAddSubproject,
   currentFocus,
-  onFocusChange
+  onFocusChange,
+  stopwatchRef
 }, ref) => {
   const [projectSearch, setProjectSearch] = useState('');
   const [subprojectSearch, setSubprojectSearch] = useState('');
@@ -210,9 +213,13 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
       [combinationKey]: (prev[combinationKey] || 0) + 1
     }));
     
+    // Start the timer if ref is available
+    if (stopwatchRef && stopwatchRef.current && typeof stopwatchRef.current.handleStart === 'function') {
+      setTimeout(() => { stopwatchRef.current?.handleStart(); }, 0);
+    }
     // Timer would start here
     console.log('Timer started for:', { project: project.name, subproject: subproject.name });
-  }, [handleProjectSelect, handleSubprojectSelect]);
+  }, [handleProjectSelect, handleSubprojectSelect, stopwatchRef]);
 
   const filteredProjects = React.useMemo(() => 
     allProjects.filter(project =>

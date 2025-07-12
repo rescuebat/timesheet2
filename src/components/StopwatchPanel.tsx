@@ -15,6 +15,7 @@ interface StopwatchPanelProps {
 }
 
 export interface StopwatchPanelRef {
+  handleStart: () => void;
   handleStartStop: () => void;
   handlePause: () => void;
   handleLogTime: () => void;
@@ -29,7 +30,18 @@ const StopwatchPanel = forwardRef<StopwatchPanelRef, StopwatchPanelProps>(({
   onResumedProjectHandled,
   currentFocus
 }, ref) => {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<any>(null);
+  const startFnRef = useRef<() => void>();
+
+  // Expose imperative handle
+  useImperativeHandle(ref, () => ({
+    handleStart: () => {
+      if (startFnRef.current) startFnRef.current();
+    },
+    handleStartStop: () => {},
+    handlePause: () => {},
+    handleLogTime: () => {},
+  }), []);
 
   return (
     <div 
@@ -43,6 +55,7 @@ const StopwatchPanel = forwardRef<StopwatchPanelRef, StopwatchPanelProps>(({
         onPauseProject={onPauseProject}
         resumedProject={resumedProject}
         onResumedProjectHandled={onResumedProjectHandled}
+        startFnRef={startFnRef}
       />
     </div>
   );

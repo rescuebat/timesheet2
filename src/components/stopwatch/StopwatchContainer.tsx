@@ -13,6 +13,7 @@ interface StopwatchContainerProps {
   onPauseProject: (queuedProject: QueuedProject) => void;
   resumedProject?: QueuedProject;
   onResumedProjectHandled: () => void;
+  startFnRef?: React.MutableRefObject<(() => void) | undefined>;
 }
 
 const StopwatchContainer: React.FC<StopwatchContainerProps> = ({
@@ -21,7 +22,8 @@ const StopwatchContainer: React.FC<StopwatchContainerProps> = ({
   onLogTime,
   onPauseProject,
   resumedProject,
-  onResumedProjectHandled
+  onResumedProjectHandled,
+  startFnRef
 }) => {
   const [showDescriptionDialog, setShowDescriptionDialog] = React.useState(false);
   const [description, setDescription] = React.useState('');
@@ -57,6 +59,10 @@ const StopwatchContainer: React.FC<StopwatchContainerProps> = ({
         onResumedProjectHandled={onResumedProjectHandled}
       >
         {(state, actions) => {
+          // Expose handleStart to parent via ref
+          if (startFnRef) {
+            startFnRef.current = actions.handleStart;
+          }
           const canStart = selectedProject && selectedSubproject && !state.isRunning;
           const canPauseOrStop = state.isRunning && state.startTime;
 
