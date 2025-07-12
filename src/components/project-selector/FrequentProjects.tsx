@@ -1,41 +1,54 @@
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Clock } from 'lucide-react';
-import { generateProjectColor } from '@/lib/projectColors';
-interface FrequentProjectsProps {
-  frequentProjects: string[];
-  selectedProjectName?: string;
-  colorCodedEnabled: boolean;
-  onProjectSelect: (projectName: string) => void;
+import React, { useCallback } from 'react';
+
+interface Project {
+  id: string;
+  name: string;
+  subprojects: any[];
+  totalTime: number;
 }
-const FrequentProjects: React.FC<FrequentProjectsProps> = ({
-  frequentProjects,
-  selectedProjectName,
-  colorCodedEnabled,
-  onProjectSelect
+
+interface FrequentProjectsProps {
+  frequentProjects: Project[];
+  selectedProjectId: string;
+  onProjectSelect: (projectId: string) => void;
+}
+
+const FrequentProjects: React.FC<FrequentProjectsProps> = React.memo(({ 
+  frequentProjects, 
+  selectedProjectId, 
+  onProjectSelect 
 }) => {
-  const getProjectBackgroundStyle = (projectName: string) => {
-    if (!colorCodedEnabled) return {};
-    return {
-      backgroundColor: generateProjectColor(projectName),
-      border: '1px solid rgba(0, 0, 0, 0.1)',
-      borderRadius: '6px'
-    };
-  };
+  const handleProjectClick = useCallback((projectId: string) => {
+    onProjectSelect(projectId);
+  }, [onProjectSelect]);
+
   if (frequentProjects.length === 0) {
-    return null;
-  }
-  return <div className="space-y-2">
-      <Label className="flex items-center gap-2 text-sm font-semibold text-black">
-        <Clock className="h-4 w-4 text-black" />
-        Frequently Used Projects (Top 5)
-      </Label>
-      <div className="grid grid-cols-2 gap-2">
-         {frequentProjects.map(projectName => <Button key={projectName} variant={selectedProjectName === projectName ? "default" : "outline"} size="sm" onClick={() => onProjectSelect(projectName)} className={`text-left font-normal text-xs ${selectedProjectName === projectName ? 'text-white' : 'text-black'}`}>
-             {projectName}
-           </Button>)}
+    return (
+      <div className="text-center py-6 text-gray-400 dark:text-gray-500 text-sm">
+        No frequent projects yet
       </div>
-    </div>;
-};
+    );
+  }
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      {frequentProjects.map((project) => (
+        <button
+          key={project.id}
+          className={`px-4 py-2 rounded-lg flex items-center text-sm transition-all duration-200 font-medium ${
+            selectedProjectId === project.id
+              ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 shadow-sm'
+              : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 hover:shadow-sm'
+          } transform hover:scale-[1.02] active:scale-[0.98]`}
+          onClick={() => handleProjectClick(project.id)}
+        >
+          <span className="truncate max-w-[120px]">{project.name}</span>
+        </button>
+      ))}
+    </div>
+  );
+});
+
+FrequentProjects.displayName = 'FrequentProjects';
+
 export default FrequentProjects;

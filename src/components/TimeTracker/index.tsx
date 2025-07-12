@@ -169,63 +169,63 @@ const TimeTracker = () => {
     const selectedSubproject = selectedProject?.subprojects.find(s => s.id === selectedSubprojectId);
 
     return (
-        <ClickSpark
-            sparkColor='#fff'
-            sparkSize={10}
-            sparkRadius={15}
-            sparkCount={8}
-            duration={400}
-        >
-            <div className="relative min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
-                {/* Subtle background pattern */}
-                <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05]"
-                    style={{
-                        backgroundImage: `radial-gradient(circle at 1px 1px, rgba(0,0,0,0.15) 1px, transparent 0)`,
-                        backgroundSize: '24px 24px'
-                    }} />
+        <div className="relative min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
+            {/* Subtle background pattern */}
+            <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05]"
+                style={{
+                    backgroundImage: `radial-gradient(circle at 1px 1px, rgba(0,0,0,0.15) 1px, transparent 0)`,
+                    backgroundSize: '24px 24px'
+                }} />
 
-                <div className="relative z-10 max-w-7xl mx-auto px-8 py-12">
-                    {/* Current Selection Display */}
+            <div className="relative z-10 max-w-7xl mx-auto px-8 py-12">
+                {/* Current Selection Display with ClickSpark */}
+                <ClickSpark
+                    sparkColor='#fff'
+                    sparkSize={10}
+                    sparkRadius={15}
+                    sparkCount={8}
+                    duration={400}
+                >
                     <CurrentSelectionDisplay
                         selectedProject={selectedProject}
                         selectedSubproject={selectedSubproject}
                         isTimerRunning={isTimerRunning}
                         currentTime={currentTime}
                     />
+                </ClickSpark>
 
-                    {/* Main Layout */}
-                    <TimeTrackerLayout
-                        projects={projects}
-                        selectedProjectId={selectedProjectId}
-                        selectedSubprojectId={selectedSubprojectId}
-                        onProjectSelect={handleProjectSelect}
-                        onSubprojectSelect={setSelectedSubprojectId}
-                        onAddProject={addProject}
-                        onAddSubproject={addSubproject}
-                        selectedProject={selectedProject}
-                        selectedSubproject={selectedSubproject}
+                {/* Main Layout */}
+                <TimeTrackerLayout
+                    projects={projects}
+                    selectedProjectId={selectedProjectId}
+                    selectedSubprojectId={selectedSubprojectId}
+                    onProjectSelect={handleProjectSelect}
+                    onSubprojectSelect={setSelectedSubprojectId}
+                    onAddProject={addProject}
+                    onAddSubproject={addSubproject}
+                    selectedProject={selectedProject}
+                    selectedSubproject={selectedSubproject}
+                    onLogTime={handleLogTime}
+                    onPauseProject={handlePauseProject}
+                    resumedProject={resumedProject}
+                    onResumedProjectHandled={handleResumedProjectHandled}
+                    currentFocus={currentFocus}
+                    onFocusChange={setCurrentFocus}
+                    projectSelectorRef={projectSelectorRef}
+                    stopwatchRef={stopwatchRef}
+                />
+
+                {/* Queued Projects */}
+                <div className="animate-slide-up" style={{ animationDelay: '200ms' }}>
+                    <QueuedProjects
+                        queuedProjects={queuedProjects}
+                        onResumeProject={handleResumeProject}
+                        onStopProject={handleStopQueuedProject}
                         onLogTime={handleLogTime}
-                        onPauseProject={handlePauseProject}
-                        resumedProject={resumedProject}
-                        onResumedProjectHandled={handleResumedProjectHandled}
-                        currentFocus={currentFocus}
-                        onFocusChange={setCurrentFocus}
-                        projectSelectorRef={projectSelectorRef}
-                        stopwatchRef={stopwatchRef}
                     />
-
-                    {/* Queued Projects */}
-                    <div className="animate-slide-up" style={{ animationDelay: '200ms' }}>
-                        <QueuedProjects
-                            queuedProjects={queuedProjects}
-                            onResumeProject={handleResumeProject}
-                            onStopProject={handleStopQueuedProject}
-                            onLogTime={handleLogTime}
-                        />
-                    </div>
                 </div>
             </div>
-        </ClickSpark>
+        </div>
     );
 };
 
