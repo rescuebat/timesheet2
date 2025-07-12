@@ -8,23 +8,17 @@ interface StopwatchDisplayProps {
   isRunning: boolean;
   elapsedTime: number;
   displayTime: number;
-  tintOpacity: number;
-  dropRef: React.MutableRefObject<any>;
-  auroraTimeRef: React.MutableRefObject<number>;
-  lastUpdateRef: React.MutableRefObject<number | null>;
 }
 
 const StopwatchDisplay: React.FC<StopwatchDisplayProps> = ({
   isRunning,
   elapsedTime,
-  displayTime,
-  tintOpacity,
-  dropRef,
-  auroraTimeRef,
-  lastUpdateRef
+  displayTime
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fluidCanvasRef = useRef<HTMLCanvasElement>(null);
+  const auroraTimeRef = useRef<number>(0);
+  const dropRef = useRef<any>(null);
 
   // Aurora Borealis animation effect
   useEffect(() => {
@@ -68,6 +62,7 @@ const StopwatchDisplay: React.FC<StopwatchDisplayProps> = ({
       ctx.arc(size/2, size/2, size/2 - 1, 0, Math.PI * 2);
       ctx.clip();
       
+      const tintOpacity = isRunning ? 0.3 : 0.1;
       ctx.fillStyle = `rgba(235, 245, 255, ${tintOpacity})`;
       ctx.fillRect(0, 0, size, size);
       
@@ -124,35 +119,6 @@ const StopwatchDisplay: React.FC<StopwatchDisplayProps> = ({
         fluidCtx.stroke();
       }
       
-      if (dropRef.current) {
-        const { x, y, size: dropSize, rippleSize, splashing } = dropRef.current;
-        
-        if (!splashing) {
-          fluidCtx.beginPath();
-          fluidCtx.arc(x, y, dropSize, 0, Math.PI * 2);
-          fluidCtx.fillStyle = 'rgba(66, 133, 244, 0.9)';
-          fluidCtx.fill();
-        } else {
-          fluidCtx.beginPath();
-          fluidCtx.arc(x, y, rippleSize, 0, Math.PI * 2);
-          fluidCtx.strokeStyle = `rgba(66, 133, 244, ${0.9 - rippleSize/60})`;
-          fluidCtx.lineWidth = 2 + rippleSize/20;
-          fluidCtx.stroke();
-          
-          for (let i = 0; i < 8; i++) {
-            const angle = (i / 8) * Math.PI * 2;
-            const distance = rippleSize * 0.8;
-            const px = x + Math.cos(angle) * distance;
-            const py = y + Math.sin(angle) * distance;
-            
-            fluidCtx.beginPath();
-            fluidCtx.arc(px, py, 3, 0, Math.PI * 2);
-            fluidCtx.fillStyle = `rgba(66, 133, 244, ${0.9 - rippleSize/60})`;
-            fluidCtx.fill();
-          }
-        }
-      }
-      
       animationFrameId = requestAnimationFrame(drawAurora);
     };
     
@@ -161,7 +127,7 @@ const StopwatchDisplay: React.FC<StopwatchDisplayProps> = ({
     return () => {
       cancelAnimationFrame(animationFrameId);
     };
-  }, [isRunning, tintOpacity, displayTime]);
+  }, [isRunning, displayTime]);
 
   return (
     <div className="relative w-64 h-64 flex items-center justify-center overflow-hidden rounded-full shadow-lg border border-gray-100 bg-white">
@@ -178,7 +144,7 @@ const StopwatchDisplay: React.FC<StopwatchDisplayProps> = ({
                 textShadow: '0 1px 2px rgba(255,255,255,0.8)'
               }}
             >
-              {formatTime(elapsedTime)}
+              {formatTime(displayTime)}
             </div>
           </div>
         </div>

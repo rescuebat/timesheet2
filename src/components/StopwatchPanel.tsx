@@ -89,7 +89,7 @@ const StopwatchPanel: React.FC<StopwatchPanelProps> = ({
             if (!selectedProject || !selectedSubproject || !state.startTime) return;
             
             const endTime = new Date();
-            const finalDuration = state.elapsedTime;
+            const finalDuration = state.displayTime;
             
             if (finalDuration > 0) {
               setPendingLogData({
@@ -101,6 +101,7 @@ const StopwatchPanel: React.FC<StopwatchPanelProps> = ({
             }
             
             actions.handleStop();
+            actions.resetTimer();
           };
 
           return (

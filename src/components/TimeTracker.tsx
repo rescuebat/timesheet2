@@ -299,9 +299,9 @@ const TimeTracker = () => {
       <div className="relative z-10 max-w-7xl mx-auto px-8 py-12">
         {/* Selected Project/Subproject Display - Moved to top left */}
         {selectedProject && selectedSubproject && (
-          <div className="mb-8 p-4 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-lg shadow-sm border border-gray-200/50 dark:border-gray-800/50">
-            <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Current Selection</div>
-            <div className="font-medium text-gray-900 dark:text-gray-100">
+          <div className="mb-8 p-6 rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.05)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] transition-all duration-500 ease-out bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-0">
+            <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wider">Current Selection</div>
+            <div className="text-xl font-medium text-gray-900 dark:text-gray-100 tracking-tight">
               {selectedProject.name} → {selectedSubproject.name}
             </div>
           </div>
