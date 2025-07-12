@@ -147,6 +147,12 @@ const TimeTracker = () => {
         setResumedProject(undefined);
     };
 
+    // Add this handler to clear subproject when project changes
+    const handleProjectSelect = (projectId: string) => {
+        setSelectedProjectId(projectId);
+        setSelectedSubprojectId('');
+    };
+
     // Use keyboard shortcuts hook
     useKeyboardShortcuts({
         currentFocus,
@@ -188,7 +194,7 @@ const TimeTracker = () => {
                         projects={projects}
                         selectedProjectId={selectedProjectId}
                         selectedSubprojectId={selectedSubprojectId}
-                        onProjectSelect={setSelectedProjectId}
+                        onProjectSelect={handleProjectSelect}
                         onSubprojectSelect={setSelectedSubprojectId}
                         onAddProject={addProject}
                         onAddSubproject={addSubproject}

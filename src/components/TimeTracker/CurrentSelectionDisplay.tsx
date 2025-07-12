@@ -91,7 +91,7 @@ const CurrentSelectionDisplay: React.FC<CurrentSelectionDisplayProps> = ({
                 )}
 
                 {/* Time zones - Vertically stacked on the right */}
-                <div className="flex flex-col space-y-1">
+                <div className="flex flex-col space-y-1 select-none">
                     <div className="flex items-center space-x-3">
                         <span className="text-lg">🇮🇳</span>
                         <span className="text-sm font-semibold text-white">
