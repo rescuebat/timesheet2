@@ -50,6 +50,24 @@ const TimeTracker = () => {
     return storageService.getQueuedProjects();
   });
   const [resumedProject, setResumedProject] = useState<QueuedProject | undefined>();
+  const [currentFocus, setCurrentFocus] = useState<'project' | 'subproject' | 'timer'>('project');
+
+  // Reference to the stopwatch panel for keyboard actions
+  const stopwatchRef = React.useRef<{ 
+    handleStartStop: () => void, 
+    handlePause: () => void,
+    handleLogTime: () => void
+  } | null>(null);
+
+  // Reference to the project selector for keyboard navigation
+  const projectSelectorRef = React.useRef<{
+    focusProjectSearch: () => void,
+    focusSubprojectSearch: () => void,
+    selectProject: (direction: 'up' | 'down') => void,
+    selectSubproject: (direction: 'up' | 'down') => void,
+    confirmProjectSelection: () => void,
+    confirmSubprojectSelection: () => void
+  } | null>(null);
 
   // Update project times when time logs change
   useEffect(() => {
@@ -167,6 +185,105 @@ const TimeTracker = () => {
     setResumedProject(undefined);
   };
 
+  // Keyboard shortcuts handler
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore if typing in inputs, unless it's navigation keys
+      const isNavigationKey = ['ArrowUp', 'ArrowDown', 'Enter'].includes(e.key);
+      if (!isNavigationKey && (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)) {
+        return;
+      }
+
+      switch (e.key) {
+        case 'Enter':
+          e.preventDefault();
+          if (currentFocus === 'project') {
+            if (projectSelectorRef.current) {
+              projectSelectorRef.current.focusProjectSearch();
+            }
+          } else if (currentFocus === 'subproject') {
+            if (projectSelectorRef.current) {
+              projectSelectorRef.current.focusSubprojectSearch();
+            }
+          }
+          break;
+          
+        case 'ArrowUp':
+          e.preventDefault();
+          if (currentFocus === 'project') {
+            if (projectSelectorRef.current) {
+              projectSelectorRef.current.selectProject('up');
+            }
+          } else if (currentFocus === 'subproject') {
+            if (projectSelectorRef.current) {
+              projectSelectorRef.current.selectSubproject('up');
+            }
+          }
+          break;
+          
+        case 'ArrowDown':
+          e.preventDefault();
+          if (currentFocus === 'project') {
+            if (projectSelectorRef.current) {
+              projectSelectorRef.current.selectProject('down');
+            }
+          } else if (currentFocus === 'subproject') {
+            if (projectSelectorRef.current) {
+              projectSelectorRef.current.selectSubproject('down');
+            }
+          }
+          break;
+          
+        case ' ': // Space - Start/Stop
+          e.preventDefault();
+          if (currentFocus === 'timer' && stopwatchRef.current) {
+            stopwatchRef.current.handleStartStop();
+          } else if (currentFocus === 'project') {
+            if (projectSelectorRef.current) {
+              projectSelectorRef.current.confirmProjectSelection();
+              setCurrentFocus('subproject');
+            }
+          } else if (currentFocus === 'subproject') {
+            if (projectSelectorRef.current) {
+              projectSelectorRef.current.confirmSubprojectSelection();
+              setCurrentFocus('timer');
+            }
+          }
+          break;
+          
+        case 'p': // P - Pause
+        case 'P':
+          e.preventDefault();
+          if (stopwatchRef.current) {
+            stopwatchRef.current.handlePause();
+          }
+          break;
+          
+        case 'l': // L - Log time
+        case 'L':
+          e.preventDefault();
+          if (stopwatchRef.current) {
+            stopwatchRef.current.handleLogTime();
+          }
+          break;
+          
+        case 'e': // E - Switch to Excel view
+        case 'E':
+          e.preventDefault();
+          switchToExcelView();
+          break;
+          
+        default:
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [currentFocus]);
+
   const selectedProject = projects.find(p => p.id === selectedProjectId);
   const selectedSubproject = selectedProject?.subprojects.find(s => s.id === selectedSubprojectId);
 
@@ -180,31 +297,26 @@ const TimeTracker = () => {
            }} />
       
       <div className="relative z-10 max-w-7xl mx-auto px-8 py-12">
-        {/* Header */}
-        <div className="mb-12 animate-fade-in">
-          <h1 className="text-4xl font-light text-gray-900 dark:text-gray-100 mb-2 tracking-tight">
-            Time Tracker
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400 text-lg font-light">
-            Track your time with precision and elegance
-          </p>
-        </div>
+        {/* Selected Project/Subproject Display - Moved to top left */}
+        {selectedProject && selectedSubproject && (
+          <div className="mb-8 p-4 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-lg shadow-sm border border-gray-200/50 dark:border-gray-800/50">
+            <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Current Selection</div>
+            <div className="font-medium text-gray-900 dark:text-gray-100">
+              {selectedProject.name} → {selectedSubproject.name}
+            </div>
+          </div>
+        )}
 
         {/* Main Grid */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
-          {/* Project Selection Panel */}
+          {/* Project Selection Panel - Removed header */}
           <Card className="group relative overflow-hidden bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-0 shadow-[0_1px_3px_rgba(0,0,0,0.05)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] transition-all duration-500 ease-out">
             {/* Subtle gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-br from-gray-50/50 via-transparent to-gray-100/30 dark:from-gray-800/30 dark:via-transparent dark:to-gray-900/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             
-            <CardHeader className="relative z-10 pb-6 border-b border-gray-100/50 dark:border-gray-800/50">
-              <CardTitle className="text-xl font-medium text-gray-900 dark:text-gray-100 tracking-tight flex items-center gap-3">
-                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                Project Selection
-              </CardTitle>
-            </CardHeader>
             <CardContent className="relative z-10 p-8">
               <ProjectSelector
+                ref={projectSelectorRef}
                 projects={projects}
                 selectedProjectId={selectedProjectId}
                 selectedSubprojectId={selectedSubprojectId}
@@ -212,23 +324,20 @@ const TimeTracker = () => {
                 onSubprojectSelect={setSelectedSubprojectId}
                 onAddProject={addProject}
                 onAddSubproject={addSubproject}
+                currentFocus={currentFocus}
+                onFocusChange={setCurrentFocus}
               />
             </CardContent>
           </Card>
 
-          {/* Timer Panel */}
+          {/* Timer Panel - Removed header */}
           <Card className="group relative overflow-hidden bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-0 shadow-[0_1px_3px_rgba(0,0,0,0.05)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] transition-all duration-500 ease-out">
             {/* Subtle gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-transparent to-indigo-50/20 dark:from-blue-900/20 dark:via-transparent dark:to-indigo-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             
-            <CardHeader className="relative z-10 pb-6 border-b border-gray-100/50 dark:border-gray-800/50">
-              <CardTitle className="text-xl font-medium text-gray-900 dark:text-gray-100 tracking-tight flex items-center gap-3">
-                <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-                Timer
-              </CardTitle>
-            </CardHeader>
             <CardContent className="relative z-10 p-8">
               <StopwatchPanel
+                ref={stopwatchRef}
                 selectedProject={selectedProject}
                 selectedSubproject={selectedSubproject}
                 onLogTime={handleLogTime}
@@ -236,6 +345,7 @@ const TimeTracker = () => {
                 onPauseProject={handlePauseProject}
                 resumedProject={resumedProject}
                 onResumedProjectHandled={handleResumedProjectHandled}
+                currentFocus={currentFocus}
               />
             </CardContent>
           </Card>

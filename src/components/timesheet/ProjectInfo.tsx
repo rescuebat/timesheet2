@@ -77,12 +77,7 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({
       </div>
       
       {/* Status indicator */}
-      <div className="flex items-center justify-center gap-2 pt-2">
-        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-        <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-          Ready to track
-        </span>
-      </div>
+
     </div>
   );
 };
