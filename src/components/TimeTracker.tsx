@@ -362,7 +362,7 @@ const TimeTracker = () => {
                                                 className={selectedProject && selectedSubproject ? "text-white" : "text-black"}
                                             />
                                         ) : (
-                                            <span className="text-black">No Project Selected</span>
+                                            <span className={selectedProject && selectedSubproject ? "text-white" : "text-black"}>No Project Selected</span>
                                         )}
                                     </div>
                                 </div>
