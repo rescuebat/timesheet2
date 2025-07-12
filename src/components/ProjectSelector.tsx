@@ -38,8 +38,8 @@ const ProjectSearch: React.FC<{
   );
 
   return (
-    <div className="relative">
-      <div className="flex items-center">
+    <div className="relative group">
+      <div className="flex items-center relative">
         <input
           type="text"
           placeholder="Search projects..."
@@ -47,11 +47,11 @@ const ProjectSearch: React.FC<{
           onChange={(e) => setSearchTerm(e.target.value)}
           onFocus={() => setIsOpen(true)}
           onBlur={() => setTimeout(() => setIsOpen(false), 150)}
-          className="w-full py-2.5 pl-10 pr-4 bg-white rounded-xl border border-gray-200 focus:border-gray-800 focus:ring-1 focus:ring-gray-300 outline-none transition-all duration-200 text-sm"
+          className="w-full py-3 pl-12 pr-4 bg-gray-50/80 dark:bg-gray-800/50 rounded-xl border-0 focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-gray-900/10 dark:focus:ring-gray-100/20 outline-none transition-all duration-300 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 text-sm font-medium backdrop-blur-sm"
         />
         <svg 
           xmlns="http://www.w3.org/2000/svg" 
-          className="h-4 w-4 text-gray-500 absolute left-3" 
+          className="h-5 w-5 text-gray-400 dark:text-gray-500 absolute left-4 transition-colors duration-200 group-focus-within:text-gray-600 dark:group-focus-within:text-gray-300" 
           fill="none" 
           viewBox="0 0 24 24" 
           stroke="currentColor"
@@ -61,16 +61,16 @@ const ProjectSearch: React.FC<{
       </div>
 
       {isOpen && (
-        <div className="absolute z-10 w-full mt-1 bg-white rounded-xl shadow-lg border border-gray-200 max-h-60 overflow-y-auto">
+        <div className="absolute z-20 w-full mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.3)] border border-gray-100 dark:border-gray-700 max-h-64 overflow-y-auto backdrop-blur-xl animate-scale-in">
           {filteredProjects.length > 0 ? (
             filteredProjects.map((project) => (
               <div
                 key={project.id}
-                className={`px-4 py-2.5 cursor-pointer flex items-center text-sm ${
+                className={`px-4 py-3 cursor-pointer flex items-center text-sm transition-all duration-200 ${
                   selectedProjectId === project.id
-                    ? 'bg-gray-100 text-gray-900 font-medium'
-                    : 'hover:bg-gray-50'
-                }`}
+                    ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 font-medium'
+                    : 'hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
+                } first:rounded-t-xl last:rounded-b-xl`}
                 onClick={() => {
                   onProjectSelect(project.id);
                   setIsOpen(false);
@@ -81,7 +81,7 @@ const ProjectSearch: React.FC<{
               </div>
             ))
           ) : (
-            <div className="px-4 py-3 text-gray-500 text-sm text-center">
+            <div className="px-4 py-6 text-gray-500 dark:text-gray-400 text-sm text-center">
               No projects found
             </div>
           )}
@@ -98,7 +98,7 @@ const FrequentProjects: React.FC<{
 }> = ({ frequentProjects, selectedProjectId, onProjectSelect }) => {
   if (frequentProjects.length === 0) {
     return (
-      <div className="text-center py-3 text-gray-400 text-xs">
+      <div className="text-center py-6 text-gray-400 dark:text-gray-500 text-sm">
         No frequent projects yet
       </div>
     );
@@ -109,14 +109,14 @@ const FrequentProjects: React.FC<{
       {frequentProjects.map((project) => (
         <button
           key={project.id}
-          className={`px-3 py-1.5 rounded-xl flex items-center text-xs transition-colors ${
+          className={`px-4 py-2 rounded-lg flex items-center text-sm transition-all duration-200 font-medium ${
             selectedProjectId === project.id
-              ? 'bg-gray-800 text-white'
-              : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-          }`}
+              ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 shadow-sm'
+              : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 hover:shadow-sm'
+          } transform hover:scale-[1.02] active:scale-[0.98]`}
           onClick={() => onProjectSelect(project.id)}
         >
-          <span className="truncate max-w-[100px]">{project.name}</span>
+          <span className="truncate max-w-[120px]">{project.name}</span>
         </button>
       ))}
     </div>
@@ -136,8 +136,8 @@ const SubprojectSearch: React.FC<{
   );
 
   return (
-    <div className="relative">
-      <div className="flex items-center">
+    <div className="relative group">
+      <div className="flex items-center relative">
         <input
           type="text"
           placeholder={`Search in ${selectedProject.name}...`}
@@ -145,11 +145,11 @@ const SubprojectSearch: React.FC<{
           onChange={(e) => setSearchTerm(e.target.value)}
           onFocus={() => setIsOpen(true)}
           onBlur={() => setTimeout(() => setIsOpen(false), 150)}
-          className="w-full py-2.5 pl-10 pr-4 bg-white rounded-xl border border-gray-200 focus:border-gray-800 focus:ring-1 focus:ring-gray-300 outline-none transition-all duration-200 text-sm"
+          className="w-full py-3 pl-12 pr-4 bg-gray-50/80 dark:bg-gray-800/50 rounded-xl border-0 focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-gray-900/10 dark:focus:ring-gray-100/20 outline-none transition-all duration-300 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 text-sm font-medium backdrop-blur-sm"
         />
         <svg 
           xmlns="http://www.w3.org/2000/svg" 
-          className="h-4 w-4 text-gray-500 absolute left-3" 
+          className="h-5 w-5 text-gray-400 dark:text-gray-500 absolute left-4 transition-colors duration-200 group-focus-within:text-gray-600 dark:group-focus-within:text-gray-300" 
           fill="none" 
           viewBox="0 0 24 24" 
           stroke="currentColor"
@@ -159,16 +159,16 @@ const SubprojectSearch: React.FC<{
       </div>
 
       {isOpen && (
-        <div className="absolute z-10 w-full mt-1 bg-white rounded-xl shadow-lg border border-gray-200 max-h-60 overflow-y-auto">
+        <div className="absolute z-20 w-full mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.3)] border border-gray-100 dark:border-gray-700 max-h-64 overflow-y-auto backdrop-blur-xl animate-scale-in">
           {filteredSubprojects.length > 0 ? (
             filteredSubprojects.map((subproject) => (
               <div
                 key={subproject.id}
-                className={`px-4 py-2.5 cursor-pointer flex items-center text-sm ${
+                className={`px-4 py-3 cursor-pointer flex items-center text-sm transition-all duration-200 ${
                   selectedSubprojectId === subproject.id
-                    ? 'bg-gray-100 text-gray-900 font-medium'
-                    : 'hover:bg-gray-50'
-                }`}
+                    ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 font-medium'
+                    : 'hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
+                } first:rounded-t-xl last:rounded-b-xl`}
                 onClick={() => {
                   onSubprojectSelect(subproject.id);
                   setIsOpen(false);
@@ -179,7 +179,7 @@ const SubprojectSearch: React.FC<{
               </div>
             ))
           ) : (
-            <div className="px-4 py-3 text-gray-500 text-sm text-center">
+            <div className="px-4 py-6 text-gray-500 dark:text-gray-400 text-sm text-center">
               No subprojects found
             </div>
           )}
@@ -196,7 +196,7 @@ const FrequentSubprojects: React.FC<{
 }> = ({ frequentSubprojects, selectedSubprojectId, onSubprojectSelect }) => {
   if (frequentSubprojects.length === 0) {
     return (
-      <div className="text-center py-3 text-gray-400 text-xs">
+      <div className="text-center py-6 text-gray-400 dark:text-gray-500 text-sm">
         No frequent subprojects yet
       </div>
     );
@@ -207,14 +207,14 @@ const FrequentSubprojects: React.FC<{
       {frequentSubprojects.map((subproject) => (
         <button
           key={subproject.id}
-          className={`px-3 py-1.5 rounded-xl flex items-center text-xs transition-colors ${
+          className={`px-4 py-2 rounded-lg flex items-center text-sm transition-all duration-200 font-medium ${
             selectedSubprojectId === subproject.id
-              ? 'bg-gray-800 text-white'
-              : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-          }`}
+              ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 shadow-sm'
+              : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 hover:shadow-sm'
+          } transform hover:scale-[1.02] active:scale-[0.98]`}
           onClick={() => onSubprojectSelect(subproject.id)}
         >
-          <span className="truncate max-w-[100px]">{subproject.name}</span>
+          <span className="truncate max-w-[120px]">{subproject.name}</span>
         </button>
       ))}
     </div>
@@ -277,9 +277,12 @@ const ProjectSelector: React.FC<ProjectSelectorProps> = ({
   };
 
   return (
-    <div className="space-y-4 flex flex-col h-full">
+    <div className="space-y-8 flex flex-col h-full">
       {/* Project Search */}
-      <div className="bg-white rounded-xl p-3 border border-gray-200 shadow-sm">
+      <div className="space-y-3">
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wider">
+          Projects
+        </h3>
         <ProjectSearch
           projects={projects}
           selectedProjectId={selectedProjectId}
@@ -289,8 +292,8 @@ const ProjectSelector: React.FC<ProjectSelectorProps> = ({
       
       {/* Frequent Projects */}
       {frequentProjects.length > 0 && (
-        <div className="bg-white rounded-xl p-3 border border-gray-200 shadow-sm">
-          <h3 className="text-xs font-medium text-gray-500 mb-2 px-1 uppercase tracking-wider">
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
             Frequent Projects
           </h3>
           <FrequentProjects
@@ -302,9 +305,12 @@ const ProjectSelector: React.FC<ProjectSelectorProps> = ({
       )}
 
       {selectedProject && (
-        <div className="space-y-4 mt-auto">
+        <div className="space-y-8 mt-auto">
           {/* Subproject Search */}
-          <div className="bg-white rounded-xl p-3 border border-gray-200 shadow-sm">
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wider">
+              Subprojects
+            </h3>
             <SubprojectSearch
               selectedProject={selectedProject}
               selectedSubprojectId={selectedSubprojectId}
@@ -314,8 +320,8 @@ const ProjectSelector: React.FC<ProjectSelectorProps> = ({
 
           {/* Frequent Subprojects */}
           {frequentSubprojectsEnabled && frequentSubprojects.length > 0 && (
-            <div className="bg-white rounded-xl p-3 border border-gray-200 shadow-sm">
-              <h3 className="text-xs font-medium text-gray-500 mb-2 px-1 uppercase tracking-wider">
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Frequent in {selectedProject.name}
               </h3>
               <FrequentSubprojects

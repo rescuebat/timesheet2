@@ -21,8 +21,8 @@ const StopwatchControls: React.FC<StopwatchControlsProps> = ({
   onPause,
   onStop
 }) => {
-  const buttonBaseStyle = "relative h-14 px-6 rounded-full font-medium text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 focus:outline-none overflow-hidden group";
-  const minWidth = { minWidth: '120px' };
+  const buttonBaseStyle = "relative h-14 px-8 rounded-2xl font-medium text-lg transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none";
+  const minWidth = { minWidth: '140px' };
 
   return (
     <div className="flex items-center gap-4 z-10">
@@ -30,56 +30,41 @@ const StopwatchControls: React.FC<StopwatchControlsProps> = ({
         <button
           onClick={onStart}
           disabled={!canStart}
-          className={`${buttonBaseStyle} bg-gradient-to-br from-[#34A853] to-[#2a8c43] text-white`}
-          style={{
-            ...minWidth,
-            boxShadow: '0 5px 15px rgba(52, 168, 83, 0.3)',
-            transition: 'all 0.4s cubic-bezier(0.25, 1, 0.5, 1)'
-          }}
+          className={`${buttonBaseStyle} bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 shadow-[0_4px_20px_rgba(0,0,0,0.15)] dark:shadow-[0_4px_20px_rgba(255,255,255,0.1)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.2)] dark:hover:shadow-[0_8px_30px_rgba(255,255,255,0.15)]`}
+          style={minWidth}
         >
           <span className="relative z-10 flex items-center justify-center">
-            <Play className="h-5 w-5 mr-2" strokeWidth={2.5} />
+            <Play className="h-5 w-5 mr-3" strokeWidth={2} />
             Start
           </span>
-          <span className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-300"></span>
-          <span className="absolute inset-0 bg-gradient-to-br from-[#43b463] to-[#34A853] opacity-0 group-active:opacity-100 transition-opacity duration-200"></span>
+          <span className="absolute inset-0 bg-gradient-to-r from-gray-800 to-gray-900 dark:from-gray-200 dark:to-gray-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
         </button>
       ) : (
         <button
           onClick={onStop}
           disabled={!canPauseOrStop}
-          className={`${buttonBaseStyle} bg-gradient-to-br from-[#EA4335] to-[#d03124] text-white`}
-          style={{
-            ...minWidth,
-            boxShadow: '0 5px 15px rgba(234, 67, 53, 0.3)',
-            transition: 'all 0.4s cubic-bezier(0.25, 1, 0.5, 1)'
-          }}
+          className={`${buttonBaseStyle} bg-red-600 dark:bg-red-500 text-white shadow-[0_4px_20px_rgba(239,68,68,0.3)] hover:shadow-[0_8px_30px_rgba(239,68,68,0.4)]`}
+          style={minWidth}
         >
           <span className="relative z-10 flex items-center justify-center">
-            <Square className="h-5 w-5 mr-2" strokeWidth={2.5} />
+            <Square className="h-5 w-5 mr-3" strokeWidth={2} />
             Stop
           </span>
-          <span className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-300"></span>
-          <span className="absolute inset-0 bg-gradient-to-br from-[#f55c47] to-[#EA4335] opacity-0 group-active:opacity-100 transition-opacity duration-200"></span>
+          <span className="absolute inset-0 bg-gradient-to-r from-red-700 to-red-600 dark:from-red-600 dark:to-red-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
         </button>
       )}
       
       <button
         onClick={onPause}
         disabled={!canPauseOrStop}
-        className={`${buttonBaseStyle} bg-gradient-to-br from-[#4285F4] to-[#3367d6] text-white`}
-        style={{
-          ...minWidth,
-          boxShadow: '0 5px 15px rgba(66, 133, 244, 0.3)',
-          transition: 'all 0.4s cubic-bezier(0.25, 1, 0.5, 1)'
-        }}
+        className={`${buttonBaseStyle} bg-blue-600 dark:bg-blue-500 text-white shadow-[0_4px_20px_rgba(37,99,235,0.3)] hover:shadow-[0_8px_30px_rgba(37,99,235,0.4)]`}
+        style={minWidth}
       >
         <span className="relative z-10 flex items-center justify-center">
-          <Pause className="h-5 w-5 mr-2" strokeWidth={2.5} />
+          <Pause className="h-5 w-5 mr-3" strokeWidth={2} />
           Pause
         </span>
-        <span className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-300"></span>
-        <span className="absolute inset-0 bg-gradient-to-br from-[#5a95f5] to-[#4285F4] opacity-0 group-active:opacity-100 transition-opacity duration-200"></span>
+        <span className="absolute inset-0 bg-gradient-to-r from-blue-700 to-blue-600 dark:from-blue-600 dark:to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
       </button>
     </div>
   );

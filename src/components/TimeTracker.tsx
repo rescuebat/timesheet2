@@ -171,17 +171,39 @@ const TimeTracker = () => {
   const selectedSubproject = selectedProject?.subprojects.find(s => s.id === selectedSubprojectId);
 
   return (
-    <div className="relative font-sans bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[650px]">
-          {/* Left Panel - Project Selection */}
-          <Card className="h-full rounded-[22px] bg-white/90 backdrop-blur-2xl border border-white/80 shadow-xl hover:shadow-2xl transition-all duration-300">
-            <CardHeader className="px-6 py-5 border-b border-gray-100/50">
-              <CardTitle className="text-[22px] font-medium text-gray-800 tracking-[-0.01em]">
-                Select Project
+    <div className="relative min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
+      {/* Subtle background pattern */}
+      <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05]" 
+           style={{
+             backgroundImage: `radial-gradient(circle at 1px 1px, rgba(0,0,0,0.15) 1px, transparent 0)`,
+             backgroundSize: '24px 24px'
+           }} />
+      
+      <div className="relative z-10 max-w-7xl mx-auto px-8 py-12">
+        {/* Header */}
+        <div className="mb-12 animate-fade-in">
+          <h1 className="text-4xl font-light text-gray-900 dark:text-gray-100 mb-2 tracking-tight">
+            Time Tracker
+          </h1>
+          <p className="text-gray-500 dark:text-gray-400 text-lg font-light">
+            Track your time with precision and elegance
+          </p>
+        </div>
+
+        {/* Main Grid */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
+          {/* Project Selection Panel */}
+          <Card className="group relative overflow-hidden bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-0 shadow-[0_1px_3px_rgba(0,0,0,0.05)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] transition-all duration-500 ease-out">
+            {/* Subtle gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-br from-gray-50/50 via-transparent to-gray-100/30 dark:from-gray-800/30 dark:via-transparent dark:to-gray-900/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            
+            <CardHeader className="relative z-10 pb-6 border-b border-gray-100/50 dark:border-gray-800/50">
+              <CardTitle className="text-xl font-medium text-gray-900 dark:text-gray-100 tracking-tight flex items-center gap-3">
+                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                Project Selection
               </CardTitle>
             </CardHeader>
-            <CardContent className="h-full pt-0 px-5 pb-6">
+            <CardContent className="relative z-10 p-8">
               <ProjectSelector
                 projects={projects}
                 selectedProjectId={selectedProjectId}
@@ -194,12 +216,18 @@ const TimeTracker = () => {
             </CardContent>
           </Card>
 
-          {/* Right Panel - Stopwatch */}
-          <Card className="h-full rounded-[22px] bg-white/90 backdrop-blur-2xl border border-white/80 shadow-xl hover:shadow-2xl transition-all duration-300">
-            <CardHeader className="px-6 py-5 border-b border-gray-100/50">
-
+          {/* Timer Panel */}
+          <Card className="group relative overflow-hidden bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-0 shadow-[0_1px_3px_rgba(0,0,0,0.05)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] transition-all duration-500 ease-out">
+            {/* Subtle gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-transparent to-indigo-50/20 dark:from-blue-900/20 dark:via-transparent dark:to-indigo-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            
+            <CardHeader className="relative z-10 pb-6 border-b border-gray-100/50 dark:border-gray-800/50">
+              <CardTitle className="text-xl font-medium text-gray-900 dark:text-gray-100 tracking-tight flex items-center gap-3">
+                <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                Timer
+              </CardTitle>
             </CardHeader>
-            <CardContent className="h-full pt-0 px-5 pb-6">
+            <CardContent className="relative z-10 p-8">
               <StopwatchPanel
                 selectedProject={selectedProject}
                 selectedSubproject={selectedSubproject}
@@ -214,7 +242,7 @@ const TimeTracker = () => {
         </div>
 
         {/* Queued Projects */}
-        <div className="mt-6">
+        <div className="animate-slide-up" style={{ animationDelay: '200ms' }}>
           <QueuedProjects
             queuedProjects={queuedProjects}
             onResumeProject={handleResumeProject}
