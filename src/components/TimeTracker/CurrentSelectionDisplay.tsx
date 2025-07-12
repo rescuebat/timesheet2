@@ -38,7 +38,7 @@ const CurrentSelectionDisplay: React.FC<CurrentSelectionDisplayProps> = ({
     };
 
     return (
-        <div className="mb-8 p-8 rounded-3xl bg-black shadow-2xl border border-gray-800 transition-all duration-700 ease-out hover:shadow-3xl hover:scale-[1.01] hover:-translate-y-0.5">
+        <div className="mb-4 p-4 rounded-3xl bg-black shadow-2xl border border-gray-800 transition-all duration-700 ease-out hover:shadow-3xl hover:scale-[1.01] hover:-translate-y-0.5">
             <div className="flex items-center justify-between">
                 {/* Currently Tracking Indicator */}
                 <div className="flex items-center space-x-6 min-w-0">
@@ -94,19 +94,19 @@ const CurrentSelectionDisplay: React.FC<CurrentSelectionDisplayProps> = ({
                 <div className="flex flex-col space-y-1 select-none">
                     <div className="flex items-center space-x-3">
                         <span className="text-lg">🇮🇳</span>
-                        <span className="text-sm font-semibold text-white">
+                        <span className="text-base font-semibold text-white" style={{ fontSize: '1.10rem' }}>
                             {formatTime(currentTime, 'Asia/Kolkata')}
                         </span>
                     </div>
                     <div className="flex items-center space-x-3">
                         <span className="text-lg">🇬🇧</span>
-                        <span className="text-sm font-semibold text-white">
+                        <span className="text-base font-semibold text-white" style={{ fontSize: '1.10rem' }}>
                             {formatTime(currentTime, 'Europe/London')}
                         </span>
                     </div>
                     <div className="flex items-center space-x-3">
                         <span className="text-lg">🇺🇸</span>
-                        <span className="text-sm font-semibold text-white">
+                        <span className="text-base font-semibold text-white" style={{ fontSize: '1.10rem' }}>
                             {formatTime(currentTime, 'America/New_York')}
                         </span>
                     </div>
