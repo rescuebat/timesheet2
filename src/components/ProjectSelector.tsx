@@ -422,46 +422,34 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
         <div className="flex-1">
           <h3 className="text-sm font-semibold text-gray-900 mb-3 uppercase tracking-wider">Quick Start Combinations</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {pendingQuickStart ? (
+            {frequentCombinations.map((combination, index) => (
               <button
-                className="col-span-2 flex items-center justify-center p-8 bg-black rounded-xl transition-all duration-500 shadow-lg border border-transparent focus:outline-none focus:ring-2 focus:ring-white"
-                style={{ minHeight: '96px' }}
-                onClick={() => handleCombinationClick(pendingQuickStart.project, pendingQuickStart.subproject, pendingQuickStart.index)}
+                key={index}
+                onClick={() => handleCombinationClick(combination.project, combination.subproject, index)}
+                className={`group flex items-center justify-between w-full h-full p-3 rounded-lg transition-all duration-200 border border-transparent focus:outline-none focus:ring-2 focus:ring-black ${pendingQuickStart && pendingQuickStart.project.id === combination.project.id && pendingQuickStart.subproject.id === combination.subproject.id ? 'bg-black shadow-lg' : 'bg-gray-50 hover:bg-gray-100 hover:shadow-md hover:border-gray-200'}`}
+                style={{ minHeight: '64px' }}
               >
-                <span className="text-white text-lg font-semibold">
-                  Tap to start timer for {pendingQuickStart.project.name} - {pendingQuickStart.subproject.name}
-                </span>
+                {pendingQuickStart && pendingQuickStart.project.id === combination.project.id && pendingQuickStart.subproject.id === combination.subproject.id ? (
+                  <span className="text-white text-sm font-medium w-full text-center transition-colors duration-300">
+                    Tap to start timer for {combination.project.name} - {combination.subproject.name}
+                  </span>
+                ) : (
+                  <>
+                    <div className="flex flex-col items-start">
+                      <span className="text-xs font-semibold text-gray-900 group-hover:text-gray-900">
+                        {combination.project.name}
+                      </span>
+                      <span className="text-[10px] text-gray-600 group-hover:text-gray-700 font-normal">
+                        {combination.subproject.name}
+                      </span>
+                    </div>
+                    <div className="ml-2 p-1.5 bg-white group-hover:bg-gray-900 rounded-full transition-all duration-200 shadow-sm">
+                      <Play size={12} className="text-gray-600 group-hover:text-white fill-current" />
+                    </div>
+                  </>
+                )}
               </button>
-            ) : (
-              frequentCombinations.map((combination, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleCombinationClick(combination.project, combination.subproject, index)}
-                  className={`group flex items-center justify-between w-full h-full p-3 rounded-lg transition-all duration-200 border border-transparent focus:outline-none focus:ring-2 focus:ring-black ${pendingQuickStart && pendingQuickStart.project.id === combination.project.id && pendingQuickStart.subproject.id === combination.subproject.id ? 'bg-black shadow-lg' : 'bg-gray-50 hover:bg-gray-100 hover:shadow-md hover:border-gray-200'}`}
-                  style={{ minHeight: '64px' }}
-                >
-                  {pendingQuickStart && pendingQuickStart.project.id === combination.project.id && pendingQuickStart.subproject.id === combination.subproject.id ? (
-                    <span className="text-white text-base font-semibold w-full text-center transition-colors duration-300">
-                      Tap to start timer for {combination.project.name} - {combination.subproject.name}
-                    </span>
-                  ) : (
-                    <>
-                      <div className="flex flex-col items-start">
-                        <span className="text-sm font-semibold text-gray-900 group-hover:text-gray-900">
-                          {combination.project.name}
-                        </span>
-                        <span className="text-xs text-gray-600 group-hover:text-gray-700">
-                          {combination.subproject.name}
-                        </span>
-                      </div>
-                      <div className="ml-2 p-1.5 bg-white group-hover:bg-gray-900 rounded-full transition-all duration-200 shadow-sm">
-                        <Play size={12} className="text-gray-600 group-hover:text-white fill-current" />
-                      </div>
-                    </>
-                  )}
-                </button>
-              ))
-            )}
+            ))}
           </div>
         </div>
       )}
