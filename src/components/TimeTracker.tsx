@@ -588,44 +588,47 @@ const TimeTracker = () => {
                                 </div>
                             </div>
 
-                            {/* Project Section */}
-                            <div className="flex-1 px-12 min-w-0">
-                                <div className="text-xs font-bold text-gray-300 uppercase tracking-[0.15em] mb-3">
-                                    Project
-                                </div>
-                                <div className="text-2xl font-semibold tracking-tight truncate">
-                                    {selectedProject ? (
-                                        <ShinyText
-                                            text={selectedProject.name}
-                                            disabled={false}
-                                            speed={3}
-                                            className="text-white"
-                                        />
-                                    ) : (
-                                        <span className="text-white">No Project Selected</span>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* Subproject Section - Only show if subproject is selected */}
-                            {selectedSubproject && (
-                                <div className="flex-1 px-12 min-w-0">
+                            {/* Centered Project and Subproject Section */}
+                            <div className="flex items-center justify-center flex-1">
+                                {/* Project Section */}
+                                <div className="px-12 min-w-0">
                                     <div className="text-xs font-bold text-gray-300 uppercase tracking-[0.15em] mb-3">
-                                        Subproject
+                                        Project
                                     </div>
                                     <div className="text-2xl font-semibold tracking-tight truncate">
-                                        <ShinyText
-                                            text={selectedSubproject.name}
-                                            disabled={false}
-                                            speed={3}
-                                            className="text-white"
-                                        />
+                                        {selectedProject ? (
+                                            <ShinyText
+                                                text={selectedProject.name}
+                                                disabled={false}
+                                                speed={3}
+                                                className="text-white"
+                                            />
+                                        ) : (
+                                            <span className="text-white">No Project Selected</span>
+                                        )}
                                     </div>
                                 </div>
-                            )}
+
+                                {/* Subproject Section - Only show if subproject is selected */}
+                                {selectedSubproject && (
+                                    <div className="px-12 min-w-0">
+                                        <div className="text-xs font-bold text-gray-300 uppercase tracking-[0.15em] mb-3">
+                                            Subproject
+                                        </div>
+                                        <div className="text-2xl font-semibold tracking-tight truncate">
+                                            <ShinyText
+                                                text={selectedSubproject.name}
+                                                disabled={false}
+                                                speed={3}
+                                                className="text-white"
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
 
                             {/* Time zones - Vertically stacked on the right */}
-                            <div className="flex flex-col space-y-1 ml-12">
+                            <div className="flex flex-col space-y-1">
                                 <div className="flex items-center space-x-3">
                                     <span className="text-lg">🇮🇳</span>
                                     <span className="text-sm font-semibold text-white">
