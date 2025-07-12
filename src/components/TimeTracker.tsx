@@ -578,12 +578,12 @@ const TimeTracker = () => {
                             {/* Currently Tracking Indicator */}
                             <div className="flex items-center space-x-6 min-w-0">
                                 <div className="relative">
-                                    <div className={`w-4 h-4 rounded-full bg-white ${isTimerRunning ? 'animate-pulse' : ''}`}></div>
-                                    {isTimerRunning && (
+                                    <div className={`w-4 h-4 rounded-full ${selectedProject && selectedSubproject ? 'bg-white' : 'bg-black'} ${isTimerRunning ? 'animate-pulse' : ''}`}></div>
+                                    {isTimerRunning && selectedProject && selectedSubproject && (
                                         <div className="absolute inset-0 w-4 h-4 rounded-full bg-white animate-ping opacity-75"></div>
                                     )}
                                 </div>
-                                <div className="text-xs font-bold text-gray-300 uppercase tracking-[0.15em] leading-relaxed">
+                                <div className={`text-xs font-bold uppercase tracking-[0.15em] leading-relaxed ${selectedProject && selectedSubproject ? 'text-gray-300' : 'text-black'}`}>
                                     Currently<br />Tracking
                                 </div>
                             </div>
@@ -592,19 +592,19 @@ const TimeTracker = () => {
                             <div className="flex items-center justify-center flex-1">
                                 {/* Project Section */}
                                 <div className="px-12 min-w-0">
-                                    <div className="text-xs font-bold text-gray-300 uppercase tracking-[0.15em] mb-3">
+                                    <div className={`text-xs font-bold uppercase tracking-[0.15em] mb-3 ${selectedProject && selectedSubproject ? 'text-gray-300' : 'text-black'}`}>
                                         Project
                                     </div>
                                     <div className="text-2xl font-semibold tracking-tight truncate">
                                         {selectedProject ? (
                                             <ShinyText
                                                 text={selectedProject.name}
-                                                disabled={false}
+                                                disabled={!selectedProject || !selectedSubproject}
                                                 speed={3}
-                                                className="text-white"
+                                                className={selectedProject && selectedSubproject ? "text-white" : "text-black"}
                                             />
                                         ) : (
-                                            <span className="text-white">No Project Selected</span>
+                                            <span className="text-black">No Project Selected</span>
                                         )}
                                     </div>
                                 </div>
@@ -612,15 +612,15 @@ const TimeTracker = () => {
                                 {/* Subproject Section - Only show if subproject is selected */}
                                 {selectedSubproject && (
                                     <div className="px-12 min-w-0">
-                                        <div className="text-xs font-bold text-gray-300 uppercase tracking-[0.15em] mb-3">
+                                        <div className={`text-xs font-bold uppercase tracking-[0.15em] mb-3 ${selectedProject && selectedSubproject ? 'text-gray-300' : 'text-black'}`}>
                                             Subproject
                                         </div>
                                         <div className="text-2xl font-semibold tracking-tight truncate">
                                             <ShinyText
                                                 text={selectedSubproject.name}
-                                                disabled={false}
+                                                disabled={!selectedProject || !selectedSubproject}
                                                 speed={3}
-                                                className="text-white"
+                                                className={selectedProject && selectedSubproject ? "text-white" : "text-black"}
                                             />
                                         </div>
                                     </div>
