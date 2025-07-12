@@ -14,6 +14,7 @@ interface StopwatchContainerProps {
   resumedProject?: QueuedProject;
   onResumedProjectHandled: () => void;
   startFnRef?: React.MutableRefObject<(() => void) | undefined>;
+  onTimerStopped?: () => void;
 }
 
 const StopwatchContainer: React.FC<StopwatchContainerProps> = ({
@@ -23,7 +24,8 @@ const StopwatchContainer: React.FC<StopwatchContainerProps> = ({
   onPauseProject,
   resumedProject,
   onResumedProjectHandled,
-  startFnRef
+  startFnRef,
+  onTimerStopped
 }) => {
   const [showDescriptionDialog, setShowDescriptionDialog] = React.useState(false);
   const [description, setDescription] = React.useState('');
@@ -101,6 +103,7 @@ const StopwatchContainer: React.FC<StopwatchContainerProps> = ({
             
             actions.handleStop();
             actions.resetTimer();
+            if (onTimerStopped) onTimerStopped();
           };
 
           return (

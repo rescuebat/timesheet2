@@ -27,6 +27,7 @@ interface ProjectSelectorProps {
   currentFocus?: 'project' | 'subproject' | 'timer';
   onFocusChange?: (focus: 'project' | 'subproject' | 'timer') => void;
   stopwatchRef?: React.MutableRefObject<StopwatchPanelRef | null>;
+  handleStartNewTimerForProject?: (projectId: string, subprojectId: string) => void;
 }
 
 export interface ProjectSelectorRef {
@@ -49,7 +50,8 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
   onAddSubproject,
   currentFocus,
   onFocusChange,
-  stopwatchRef
+  stopwatchRef,
+  handleStartNewTimerForProject
 }, ref) => {
   const [projectSearch, setProjectSearch] = useState('');
   const [subprojectSearch, setSubprojectSearch] = useState('');
@@ -63,6 +65,7 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
   const [projectUsageCount, setProjectUsageCount] = useState<Record<string, number>>({});
   const [subprojectUsageCount, setSubprojectUsageCount] = useState<Record<string, number>>({});
   const [combinationUsageCount, setCombinationUsageCount] = useState<Record<string, number>>({});
+  const [pendingQuickStart, setPendingQuickStart] = useState<{ project: Project; subproject: Subproject; index: number } | null>(null);
 
   // Demo data - 5 projects with 4 subprojects each
   const demoProjects: Project[] = [
@@ -146,14 +149,17 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
     setFrequentProjects(sorted);
   }, [allProjects, projectUsageCount]);
 
-  // Track frequent subprojects based on usage count
+  // Track frequent subprojects based on usage count, but only for the selected project
   useEffect(() => {
-    const allSubprojects = allProjects.flatMap(p => p.subprojects);
-    const sorted = [...allSubprojects]
-      .sort((a, b) => (subprojectUsageCount[b.id] || 0) - (subprojectUsageCount[a.id] || 0))
-      .slice(0, 5);
-    setFrequentSubprojects(sorted);
-  }, [allProjects, subprojectUsageCount]);
+    if (selectedProject) {
+      const sorted = [...selectedProject.subprojects]
+        .sort((a, b) => (subprojectUsageCount[b.id] || 0) - (subprojectUsageCount[a.id] || 0))
+        .slice(0, 5);
+      setFrequentSubprojects(sorted);
+    } else {
+      setFrequentSubprojects([]);
+    }
+  }, [selectedProject, subprojectUsageCount]);
 
   // Update search fields when selections change
   useEffect(() => {
@@ -202,24 +208,30 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
     }
   }, [selectedProject, onSubprojectSelect]);
 
-  const handleCombinationClick = useCallback((project: Project, subproject: Subproject) => {
-    handleProjectSelect(project.id);
-    handleSubprojectSelect(subproject.id);
-    
-    // Track combination usage
-    const combinationKey = `${project.id}-${subproject.id}`;
-    setCombinationUsageCount(prev => ({
-      ...prev,
-      [combinationKey]: (prev[combinationKey] || 0) + 1
-    }));
-    
-    // Start the timer if ref is available
-    if (stopwatchRef && stopwatchRef.current && typeof stopwatchRef.current.handleStart === 'function') {
-      setTimeout(() => { stopwatchRef.current?.handleStart(); }, 100);
+  const handleCombinationClick = useCallback((project: Project, subproject: Subproject, index: number) => {
+    if (pendingQuickStart && pendingQuickStart.project.id === project.id && pendingQuickStart.subproject.id === subproject.id) {
+      // Second click: confirm and start timer
+      handleProjectSelect(project.id);
+      handleSubprojectSelect(subproject.id);
+      if (typeof handleStartNewTimerForProject === 'function') {
+        setTimeout(() => { handleStartNewTimerForProject(project.id, subproject.id); }, 100);
+      } else if (stopwatchRef && stopwatchRef.current && typeof stopwatchRef.current.handleStart === 'function') {
+        setTimeout(() => { stopwatchRef.current?.handleStart(); }, 100);
+      }
+      setPendingQuickStart(null);
+      // Track combination usage
+      const combinationKey = `${project.id}-${subproject.id}`;
+      setCombinationUsageCount(prev => ({
+        ...prev,
+        [combinationKey]: (prev[combinationKey] || 0) + 1
+      }));
+      return;
     }
-    // Timer would start here
-    console.log('Timer started for:', { project: project.name, subproject: subproject.name });
-  }, [handleProjectSelect, handleSubprojectSelect, stopwatchRef]);
+    // First click: show confirmation on this button and clear selection
+    setPendingQuickStart({ project, subproject, index });
+    handleProjectSelect('');
+    handleSubprojectSelect('');
+  }, [handleProjectSelect, handleSubprojectSelect, stopwatchRef, handleStartNewTimerForProject, pendingQuickStart]);
 
   const filteredProjects = React.useMemo(() => 
     allProjects.filter(project =>
@@ -410,25 +422,46 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
         <div className="flex-1">
           <h3 className="text-sm font-semibold text-gray-900 mb-3 uppercase tracking-wider">Quick Start Combinations</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {frequentCombinations.map((combination, index) => (
+            {pendingQuickStart ? (
               <button
-                key={index}
-                onClick={() => handleCombinationClick(combination.project, combination.subproject)}
-                className="group flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-all duration-200 hover:shadow-md border border-transparent hover:border-gray-200"
+                className="col-span-2 flex items-center justify-center p-8 bg-black rounded-xl transition-all duration-500 shadow-lg border border-transparent focus:outline-none focus:ring-2 focus:ring-white"
+                style={{ minHeight: '96px' }}
+                onClick={() => handleCombinationClick(pendingQuickStart.project, pendingQuickStart.subproject, pendingQuickStart.index)}
               >
-                <div className="flex flex-col items-start">
-                  <span className="text-sm font-semibold text-gray-900 group-hover:text-gray-900">
-                    {combination.project.name}
-                  </span>
-                  <span className="text-xs text-gray-600 group-hover:text-gray-700">
-                    {combination.subproject.name}
-                  </span>
-                </div>
-                <div className="ml-2 p-1.5 bg-white group-hover:bg-gray-900 rounded-full transition-all duration-200 shadow-sm">
-                  <Play size={12} className="text-gray-600 group-hover:text-white fill-current" />
-                </div>
+                <span className="text-white text-lg font-semibold">
+                  Tap to start timer for {pendingQuickStart.project.name} - {pendingQuickStart.subproject.name}
+                </span>
               </button>
-            ))}
+            ) : (
+              frequentCombinations.map((combination, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleCombinationClick(combination.project, combination.subproject, index)}
+                  className={`group flex items-center justify-between w-full h-full p-3 rounded-lg transition-all duration-200 border border-transparent focus:outline-none focus:ring-2 focus:ring-black ${pendingQuickStart && pendingQuickStart.project.id === combination.project.id && pendingQuickStart.subproject.id === combination.subproject.id ? 'bg-black shadow-lg' : 'bg-gray-50 hover:bg-gray-100 hover:shadow-md hover:border-gray-200'}`}
+                  style={{ minHeight: '64px' }}
+                >
+                  {pendingQuickStart && pendingQuickStart.project.id === combination.project.id && pendingQuickStart.subproject.id === combination.subproject.id ? (
+                    <span className="text-white text-base font-semibold w-full text-center transition-colors duration-300">
+                      Tap to start timer for {combination.project.name} - {combination.subproject.name}
+                    </span>
+                  ) : (
+                    <>
+                      <div className="flex flex-col items-start">
+                        <span className="text-sm font-semibold text-gray-900 group-hover:text-gray-900">
+                          {combination.project.name}
+                        </span>
+                        <span className="text-xs text-gray-600 group-hover:text-gray-700">
+                          {combination.subproject.name}
+                        </span>
+                      </div>
+                      <div className="ml-2 p-1.5 bg-white group-hover:bg-gray-900 rounded-full transition-all duration-200 shadow-sm">
+                        <Play size={12} className="text-gray-600 group-hover:text-white fill-current" />
+                      </div>
+                    </>
+                  )}
+                </button>
+              ))
+            )}
           </div>
         </div>
       )}

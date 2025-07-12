@@ -24,6 +24,8 @@ interface TimeTrackerLayoutProps {
     onFocusChange: (focus: 'project' | 'subproject' | 'timer') => void;
     projectSelectorRef: React.MutableRefObject<ProjectSelectorRef | null>;
     stopwatchRef: React.MutableRefObject<StopwatchPanelRef | null>;
+    handleStartNewTimerForProject: (projectId: string, subprojectId: string) => void;
+    onTimerStopped: () => void;
 }
 
 const TimeTrackerLayout: React.FC<TimeTrackerLayoutProps> = ({
@@ -43,7 +45,9 @@ const TimeTrackerLayout: React.FC<TimeTrackerLayoutProps> = ({
     currentFocus,
     onFocusChange,
     projectSelectorRef,
-    stopwatchRef
+    stopwatchRef,
+    handleStartNewTimerForProject,
+    onTimerStopped
 }) => {
     return (
         <div className="w-full min-h-[600px] rounded-b-2xl shadow-lg bg-white/80 dark:bg-gray-900/80 flex overflow-hidden px-10 py-10 mt-8">
@@ -60,6 +64,7 @@ const TimeTrackerLayout: React.FC<TimeTrackerLayoutProps> = ({
                     currentFocus={currentFocus}
                     onFocusChange={onFocusChange}
                     stopwatchRef={stopwatchRef}
+                    handleStartNewTimerForProject={handleStartNewTimerForProject}
                 />
             </div>
             <div className="flex-1 flex items-center justify-center">
@@ -72,6 +77,7 @@ const TimeTrackerLayout: React.FC<TimeTrackerLayoutProps> = ({
                     resumedProject={resumedProject}
                     onResumedProjectHandled={onResumedProjectHandled}
                     currentFocus={currentFocus}
+                    onTimerStopped={onTimerStopped}
                 />
             </div>
         </div>

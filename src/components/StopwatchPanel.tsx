@@ -12,6 +12,7 @@ interface StopwatchPanelProps {
   resumedProject?: QueuedProject;
   onResumedProjectHandled: () => void;
   currentFocus?: 'project' | 'subproject' | 'timer';
+  onTimerStopped?: () => void;
 }
 
 export interface StopwatchPanelRef {
@@ -28,12 +29,12 @@ const StopwatchPanel = forwardRef<StopwatchPanelRef, StopwatchPanelProps>(({
   onPauseProject,
   resumedProject,
   onResumedProjectHandled,
-  currentFocus
+  currentFocus,
+  onTimerStopped
 }, ref) => {
   const containerRef = useRef<any>(null);
   const startFnRef = useRef<() => void>();
 
-  // Expose imperative handle
   useImperativeHandle(ref, () => ({
     handleStart: () => {
       if (startFnRef.current) startFnRef.current();
@@ -56,6 +57,7 @@ const StopwatchPanel = forwardRef<StopwatchPanelRef, StopwatchPanelProps>(({
         resumedProject={resumedProject}
         onResumedProjectHandled={onResumedProjectHandled}
         startFnRef={startFnRef}
+        onTimerStopped={onTimerStopped}
       />
     </div>
   );

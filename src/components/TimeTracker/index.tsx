@@ -157,6 +157,40 @@ const TimeTracker = () => {
         setSelectedSubprojectId('');
     };
 
+    // Deselect project/subproject when timer is stopped
+    const handleTimerStopped = () => {
+        setSelectedProjectId('');
+        setSelectedSubprojectId('');
+    };
+
+    // Ensure only one timer runs at a time, pause and queue previous if needed
+    const handleStartNewTimerForProject = (projectId: string, subprojectId: string) => {
+        const stopwatchState = storageService.getStopwatchState();
+        if (stopwatchState?.isRunning && stopwatchState.startTime) {
+            // Pause and queue the current running timer
+            const currentProject = projects.find(p => p.id === selectedProjectId);
+            const currentSubproject = currentProject?.subprojects.find(s => s.id === selectedSubprojectId);
+            if (currentProject && currentSubproject) {
+                const now = new Date();
+                const sessionTime = Math.floor((now.getTime() - new Date(stopwatchState.startTime).getTime()) / 1000);
+                const totalElapsed = (stopwatchState.elapsedTime || 0) + sessionTime;
+                const queuedProject = {
+                    id: Date.now().toString(),
+                    projectId: selectedProjectId,
+                    subprojectId: selectedSubprojectId,
+                    projectName: currentProject.name,
+                    subprojectName: currentSubproject.name,
+                    elapsedTime: totalElapsed,
+                    startTime: new Date(stopwatchState.startTime)
+                };
+                pauseProject(queuedProject);
+            }
+        }
+        setSelectedProjectId(projectId);
+        setSelectedSubprojectId(subprojectId);
+        setTimeout(() => { stopwatchRef.current?.handleStart(); }, 100);
+    };
+
     // Use keyboard shortcuts hook
     useKeyboardShortcuts({
         currentFocus,
@@ -213,6 +247,8 @@ const TimeTracker = () => {
                     onFocusChange={setCurrentFocus}
                     projectSelectorRef={projectSelectorRef}
                     stopwatchRef={stopwatchRef}
+                    handleStartNewTimerForProject={handleStartNewTimerForProject}
+                    onTimerStopped={handleTimerStopped}
                 />
 
                 {/* Queued Projects */}
