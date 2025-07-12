@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Calendar } from 'lucide-react';
 import CalendarUI from './holidays/CalendarUI';
@@ -8,6 +8,7 @@ import HolidayOverview from './holidays/HolidayOverview';
 import HolidayDetail from './holidays/HolidayDetail';
 import HolidaySection from './holidays/HolidaySection';
 import PlannedLeavesSection from './holidays/PlannedLeavesSection';
+import { useLocalStorage } from '@/hooks/useLocalStorage';
 
 interface Holiday {
   id: string;
@@ -75,7 +76,7 @@ const defaultHolidays: Holiday[] = [
   { id: '8', name: 'Christmas Day', date: '2025-12-25' },
 ];
 
-const PersonalJournal: React.FC = () => {
+const PersonalJournal: React.FC = React.memo(() => {
   const [holidays, setHolidays] = useState<Holiday[]>(defaultHolidays);
   const [plannedLeaves, setPlannedLeaves] = useState<PlannedLeave[]>([]);
   const [showPlannedLeaves, setShowPlannedLeaves] = useState(false);
@@ -95,18 +96,12 @@ const PersonalJournal: React.FC = () => {
   const [selectedHolidayMonth, setSelectedHolidayMonth] = useState<Date | null>(null);
   const [notifications, setNotifications] = useState<Entry[]>([]);
 
-  // Progress bar settings
-  const [isAnimationEnabled, setIsAnimationEnabled] = useState(() => {
-    const saved = localStorage.getItem('progressbar-enabled');
-    return saved ? JSON.parse(saved) : false;
-  });
-  const [progressBarColor, setProgressBarColor] = useState(() => {
-    const saved = localStorage.getItem('progressbar-color');
-    return saved || '#000000';
-  });
+  // Progress bar settings using useLocalStorage hook
+  const [isAnimationEnabled, setIsAnimationEnabled] = useLocalStorage('progressbar-enabled', false);
+  const [progressBarColor, setProgressBarColor] = useLocalStorage('progressbar-color', '#000000');
 
-  // Softer color function
-  const createSofterColor = (hex: string, softenFactor = 0.5) => {
+  // Memoized color functions
+  const createSofterColor = useCallback((hex: string, softenFactor = 0.5) => {
     const r = parseInt(hex.slice(1, 3), 16);
     const g = parseInt(hex.slice(3, 5), 16);
     const b = parseInt(hex.slice(5, 7), 16);
@@ -114,25 +109,24 @@ const PersonalJournal: React.FC = () => {
     const blendG = Math.round(g * softenFactor + 245 * (1 - softenFactor));
     const blendB = Math.round(b * softenFactor + 245 * (1 - softenFactor));
     return `rgb(${blendR}, ${blendG}, ${blendB})`;
-  };
+  }, []);
 
-  // Text color based on luminance
-  const getTextColor = (hex: string) => {
+  const getTextColor = useCallback((hex: string) => {
     const r = parseInt(hex.slice(1, 3), 16);
     const g = parseInt(hex.slice(3, 5), 16);
     const b = parseInt(hex.slice(5, 7), 16);
     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
     return luminance > 0.6 ? '#000000' : '#ffffff';
-  };
+  }, []);
 
-  // Container styles
+  // Memoized container styles
   const containerBgColor = useMemo(() => {
     return isAnimationEnabled ? createSofterColor(progressBarColor, 0.6) : '#1f2937';
-  }, [isAnimationEnabled, progressBarColor]);
+  }, [isAnimationEnabled, progressBarColor, createSofterColor]);
 
   const containerTextColor = useMemo(() => {
     return isAnimationEnabled ? getTextColor(progressBarColor) : '#000000';
-  }, [isAnimationEnabled, progressBarColor]);
+  }, [isAnimationEnabled, progressBarColor, getTextColor]);
 
   // Event listeners
   useEffect(() => {
@@ -157,15 +151,17 @@ const PersonalJournal: React.FC = () => {
     };
   }, []);
 
-  // Helper functions
-  const getHolidayDates = () => holidays.map(holiday => new Date(holiday.date));
-  const getHolidaysForMonth = (month: Date) => {
+  // Memoized helper functions
+  const getHolidayDates = useCallback(() => holidays.map(holiday => new Date(holiday.date)), [holidays]);
+  
+  const getHolidaysForMonth = useCallback((month: Date) => {
     return holidays.filter(holiday => {
       const holidayDate = new Date(holiday.date);
       return holidayDate.getMonth() === month.getMonth() && holidayDate.getFullYear() === month.getFullYear();
     });
-  };
-  const getPlannedLeaveDates = () => {
+  }, [holidays]);
+  
+  const getPlannedLeaveDates = useCallback(() => {
     const dates: Date[] = [];
     plannedLeaves.forEach(leave => {
       const start = new Date(leave.startDate);
@@ -175,31 +171,32 @@ const PersonalJournal: React.FC = () => {
       }
     });
     return dates;
-  };
+  }, [plannedLeaves]);
 
-  const getHolidayCountForMonth = (month: number, year: number) => {
+  const getHolidayCountForMonth = useCallback((month: number, year: number) => {
     return holidays.filter(holiday => {
       const holidayDate = new Date(holiday.date);
       return holidayDate.getMonth() === month && holidayDate.getFullYear() === year;
     }).length;
-  };
+  }, [holidays]);
 
-  const handleAddPlannedLeave = () => {
+  // Event handlers with useCallback
+  const handleAddPlannedLeave = useCallback(() => {
     if (newLeave.name && newLeave.employee && newLeave.startDate && newLeave.endDate) {
       const leave: PlannedLeave = { id: Date.now().toString(), ...newLeave };
-      setPlannedLeaves([...plannedLeaves, leave]);
+      setPlannedLeaves(prev => [...prev, leave]);
       setNewLeave({ name: '', employee: '', startDate: '', endDate: '' });
       setIsAddingLeave(false);
     }
-  };
+  }, [newLeave]);
 
-  const handleRemovePlannedLeave = (leaveId: string) => {
-    setPlannedLeaves(plannedLeaves.filter(leave => leave.id !== leaveId));
-  };
+  const handleRemovePlannedLeave = useCallback((leaveId: string) => {
+    setPlannedLeaves(prev => prev.filter(leave => leave.id !== leaveId));
+  }, []);
 
-  const handleRemoveHoliday = (holidayId: string) => {
-    setHolidays(holidays.filter(holiday => holiday.id !== holidayId));
-  };
+  const handleRemoveHoliday = useCallback((holidayId: string) => {
+    setHolidays(prev => prev.filter(holiday => holiday.id !== holidayId));
+  }, []);
 
   const nextMonth = () => {
     const newMonth = new Date(currentMonth);
@@ -452,6 +449,6 @@ const PersonalJournal: React.FC = () => {
       </div>
     </div>
   );
-};
+});
 
 export default PersonalJournal;

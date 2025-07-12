@@ -14,7 +14,7 @@ interface TimeBreakdownProps {
   onDateRangeChange: (range: { start: Date; end: Date }) => void;
 }
 
-const TimeBreakdown: React.FC<TimeBreakdownProps> = ({ 
+const TimeBreakdown: React.FC<TimeBreakdownProps> = React.memo(({ 
   timeLogs, 
   onUpdateTime, 
   dateRange, 
@@ -75,6 +75,34 @@ const TimeBreakdown: React.FC<TimeBreakdownProps> = ({
       .reduce((total, log) => total + log.duration, 0);
   };
 
+  const uniqueProjects = useMemo(() => {
+    const projectMap = new Map<string, { 
+      projectName: string; 
+      subprojects: Set<string>;
+    }>();
+    
+    timeLogs.forEach(log => {
+      if (!projectMap.has(log.projectName)) {
+        projectMap.set(log.projectName, {
+          projectName: log.projectName,
+          subprojects: new Set()
+        });
+      }
+      
+      if (log.subprojectName) {
+        const project = projectMap.get(log.projectName)!;
+        project.subprojects.add(log.subprojectName);
+      }
+    });
+    
+    return Array.from(projectMap.values());
+  }, [timeLogs]);
+
+  useEffect(() => {
+    const allProjects = new Set(uniqueProjects.map(p => p.projectName));
+    setSelectedProjects(allProjects);
+  }, [uniqueProjects]);
+
   const getProjectTotal = (projectName: string) => {
     return timeLogs
       .filter(log => log.projectName === projectName)
@@ -106,34 +134,6 @@ const TimeBreakdown: React.FC<TimeBreakdownProps> = ({
         isSameDay(new Date(log.date), date))
       .reduce((total, log) => total + log.duration, 0);
   };
-
-  const uniqueProjects = useMemo(() => {
-    const projectMap = new Map<string, { 
-      projectName: string; 
-      subprojects: Set<string>;
-    }>();
-    
-    timeLogs.forEach(log => {
-      if (!projectMap.has(log.projectName)) {
-        projectMap.set(log.projectName, {
-          projectName: log.projectName,
-          subprojects: new Set()
-        });
-      }
-      
-      if (log.subprojectName) {
-        const project = projectMap.get(log.projectName)!;
-        project.subprojects.add(log.subprojectName);
-      }
-    });
-    
-    return Array.from(projectMap.values());
-  }, [timeLogs]);
-
-  useEffect(() => {
-    const allProjects = new Set(uniqueProjects.map(p => p.projectName));
-    setSelectedProjects(allProjects);
-  }, [uniqueProjects]);
 
   const handleEdit = (projectName: string, subprojectName: string | null, date: Date) => {
     const cellKey = subprojectName 
@@ -184,154 +184,45 @@ const TimeBreakdown: React.FC<TimeBreakdownProps> = ({
     });
   };
 
-  const toggleProjectSelection = (projectName: string) => {
-    setSelectedProjects(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(projectName)) {
-        newSet.delete(projectName);
-      } else {
-        newSet.add(projectName);
-      }
-      return newSet;
-    });
-  };
-
-  const exportToCSV = () => {
-    const headers = ['Project', 'Subproject', 'Date', 'Hours'];
-    const csvRows = [];
-    
-    csvRows.push(headers.join(','));
-    
-    uniqueProjects.forEach(project => {
-      if (!selectedProjects.has(project.projectName)) return;
-      
-      daysInRange.forEach(date => {
-        const hours = getProjectDayTime(project.projectName, date);
-        if (hours > 0) {
-          csvRows.push([
-            `"${project.projectName}"`,
-            '',
-            format(date, 'yyyy-MM-dd'),
-            formatHours(hours)
-          ].join(','));
-        }
-      });
-      
-      if (expandedProjects.has(project.projectName)) {
-        project.subprojects.forEach(subproject => {
-          daysInRange.forEach(date => {
-            const hours = getSubprojectDayTime(project.projectName, subproject, date);
-            if (hours > 0) {
-              csvRows.push([
-                `"${project.projectName}"`,
-                `"${subproject}"`,
-                format(date, 'yyyy-MM-dd'),
-                formatHours(hours)
-              ].join(','));
-            }
-          });
-        });
-      }
-    });
-    
-    const csvString = csvRows.join('\n');
-    const blob = new Blob([csvString], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `timesheet_${format(dateRange.start, 'yyyyMMdd')}_to_${format(dateRange.end, 'yyyyMMdd')}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const goToPreviousWeek = () => {
-    onDateRangeChange({
-      start: subDays(dateRange.start, 7),
-      end: subDays(dateRange.end, 7)
-    });
-  };
-
-  const goToNextWeek = () => {
-    onDateRangeChange({
-      start: addDays(dateRange.start, 7),
-      end: addDays(dateRange.end, 7)
-    });
-  };
-
-  const goToCurrentWeek = () => {
-    onDateRangeChange({
-      start: startOfWeek(new Date(), { weekStartsOn: 1 }),
-      end: endOfWeek(new Date(), { weekStartsOn: 1 })
-    });
-  };
-
-  const handleDateRangeChange = (type: 'start' | 'end', date: Date | undefined) => {
-    if (!date) return;
-    onDateRangeChange({
-      ...dateRange,
-      [type]: date
-    });
-  };
-
   const totalDuration = timeLogs.reduce((total, log) => total + log.duration, 0);
 
   return (
-    <Card className="bg-white border border-[#B0B0B0] shadow-md">
-      <CardHeader className="py-4 px-6 bg-[#F0F0F0] border-b border-[#B0B0B0]">
-        <CardTitle className="text-xl font-bold text-black tracking-tight">
-          Time Breakdown - {format(dateRange.start, 'MMM d, yyyy')} to {format(dateRange.end, 'MMM d, yyyy')}
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Calendar className="h-5 w-5" />
+          Time Breakdown
         </CardTitle>
       </CardHeader>
-      
-      <CardContent className="p-6">
-        <TimeBreakdownHeader
-          dateRange={dateRange}
-          onDateRangeChange={handleDateRangeChange}
-          onPreviousWeek={goToPreviousWeek}
-          onNextWeek={goToNextWeek}
-          onCurrentWeek={goToCurrentWeek}
-          onExportCSV={exportToCSV}
+      <CardContent>
+        <TimeBreakdownTable
+          daysInRange={daysInRange}
           uniqueProjects={uniqueProjects}
           selectedProjects={selectedProjects}
-          onProjectToggle={toggleProjectSelection}
-          isProjectFilterOpen={isProjectFilterOpen}
-          onProjectFilterOpenChange={setIsProjectFilterOpen}
+          expandedProjects={expandedProjects}
+          editingCell={editingCell}
+          editValue={editValue}
+          colorCodedEnabled={colorCodedEnabled}
+          progressBarEnabled={progressBarEnabled}
+          progressBarColor={progressBarColor}
+          onToggleProjectExpand={toggleProjectExpand}
+          onEdit={handleEdit}
+          onSave={handleSave}
+          onCancel={handleCancel}
+          onEditValueChange={setEditValue}
+          getProjectDayTime={getProjectDayTime}
+          getSubprojectDayTime={getSubprojectDayTime}
+          getProjectTotal={getProjectTotal}
+          getSubprojectTotal={getSubprojectTotal}
+          getDayTotal={getDayTotal}
+          formatHours={formatHours}
+          totalDuration={totalDuration}
         />
-        
-        {uniqueProjects.length === 0 ? (
-          <div className="text-center py-12 text-[#7D7D7D]">
-            <Calendar className="h-16 w-16 mx-auto mb-6 opacity-40" />
-            <p className="text-lg font-medium">No time entries for this period</p>
-            <p className="text-sm mt-2">Start tracking time to see entries here</p>
-          </div>
-        ) : (
-          <TimeBreakdownTable
-            daysInRange={daysInRange}
-            uniqueProjects={uniqueProjects}
-            selectedProjects={selectedProjects}
-            expandedProjects={expandedProjects}
-            editingCell={editingCell}
-            editValue={editValue}
-            colorCodedEnabled={colorCodedEnabled}
-            progressBarEnabled={progressBarEnabled}
-            progressBarColor={progressBarColor}
-            onToggleProjectExpand={toggleProjectExpand}
-            onEdit={handleEdit}
-            onSave={handleSave}
-            onCancel={handleCancel}
-            onEditValueChange={setEditValue}
-            getProjectDayTime={getProjectDayTime}
-            getSubprojectDayTime={getSubprojectDayTime}
-            getProjectTotal={getProjectTotal}
-            getSubprojectTotal={getSubprojectTotal}
-            getDayTotal={getDayTotal}
-            formatHours={formatHours}
-            totalDuration={totalDuration}
-          />
-        )}
       </CardContent>
     </Card>
   );
-};
+});
+
+TimeBreakdown.displayName = 'TimeBreakdown';
 
 export default TimeBreakdown;

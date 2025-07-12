@@ -1,4 +1,4 @@
-import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
+import React, { useState, useEffect, forwardRef, useImperativeHandle, useCallback } from 'react';
 
 // ========== Interfaces ==========
 interface Project {
@@ -40,20 +40,33 @@ const ProjectSearch: React.FC<{
   projects: Project[];
   selectedProjectId: string;
   onProjectSelect: (projectId: string) => void;
-}> = ({ projects, selectedProjectId, onProjectSelect }) => {
+}> = React.memo(({ projects, selectedProjectId, onProjectSelect }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   
-  const filteredProjects = projects.filter(project =>
-    project.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Debug logging
+  console.log('ProjectSearch - projects:', projects);
+  console.log('ProjectSearch - selectedProjectId:', selectedProjectId);
+  
+  const filteredProjects = React.useMemo(() => 
+    projects.filter(project =>
+      project.name.toLowerCase().includes(searchTerm.toLowerCase())
+    ), [projects, searchTerm]);
+
+  const selectedProject = projects.find(p => p.id === selectedProjectId);
+
+  const handleProjectClick = useCallback((projectId: string) => {
+    onProjectSelect(projectId);
+    setIsOpen(false);
+    setSearchTerm('');
+  }, [onProjectSelect]);
 
   return (
     <div className="relative group">
       <div className="flex items-center relative">
         <input
           type="text"
-          placeholder="Search projects..."
+          placeholder={selectedProject ? `Selected: ${selectedProject.name}` : "Search projects..."}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           onFocus={() => setIsOpen(true)}
@@ -71,6 +84,24 @@ const ProjectSearch: React.FC<{
         </svg>
       </div>
 
+      {/* Show selected project info */}
+      {selectedProject && !isOpen && (
+        <div className="mt-2 p-2 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+          <div className="text-sm text-green-700 dark:text-green-300">
+            <span className="font-medium">Selected:</span> {selectedProject.name}
+          </div>
+        </div>
+      )}
+
+      {/* Show available projects count when no project is selected */}
+      {!selectedProject && !isOpen && projects.length > 0 && (
+        <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+          <div className="text-sm text-blue-700 dark:text-blue-300">
+            <span className="font-medium">Available:</span> {projects.length} projects - Click to select
+          </div>
+        </div>
+      )}
+
       {isOpen && (
         <div className="absolute z-20 w-full mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.3)] border border-gray-100 dark:border-gray-700 max-h-64 overflow-y-auto backdrop-blur-xl animate-scale-in">
           {filteredProjects.length > 0 ? (
@@ -82,31 +113,33 @@ const ProjectSearch: React.FC<{
                     ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 font-medium'
                     : 'hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
                 } first:rounded-t-xl last:rounded-b-xl`}
-                onClick={() => {
-                  onProjectSelect(project.id);
-                  setIsOpen(false);
-                  setSearchTerm('');
-                }}
+                onClick={() => handleProjectClick(project.id)}
               >
                 <span className="truncate">{project.name}</span>
               </div>
             ))
           ) : (
             <div className="px-4 py-6 text-gray-500 dark:text-gray-400 text-sm text-center">
-              No projects found
+              {searchTerm ? 'No projects match your search' : 'No projects available'}
             </div>
           )}
         </div>
       )}
     </div>
   );
-};
+});
+
+ProjectSearch.displayName = 'ProjectSearch';
 
 const FrequentProjects: React.FC<{
   frequentProjects: Project[];
   selectedProjectId: string;
   onProjectSelect: (projectId: string) => void;
-}> = ({ frequentProjects, selectedProjectId, onProjectSelect }) => {
+}> = React.memo(({ frequentProjects, selectedProjectId, onProjectSelect }) => {
+  const handleProjectClick = useCallback((projectId: string) => {
+    onProjectSelect(projectId);
+  }, [onProjectSelect]);
+
   if (frequentProjects.length === 0) {
     return (
       <div className="text-center py-6 text-gray-400 dark:text-gray-500 text-sm">
@@ -125,26 +158,35 @@ const FrequentProjects: React.FC<{
               ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 shadow-sm'
               : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 hover:shadow-sm'
           } transform hover:scale-[1.02] active:scale-[0.98]`}
-          onClick={() => onProjectSelect(project.id)}
+          onClick={() => handleProjectClick(project.id)}
         >
           <span className="truncate max-w-[120px]">{project.name}</span>
         </button>
       ))}
     </div>
   );
-};
+});
+
+FrequentProjects.displayName = 'FrequentProjects';
 
 const SubprojectSearch: React.FC<{
   selectedProject: Project;
   selectedSubprojectId: string;
   onSubprojectSelect: (subprojectId: string) => void;
-}> = ({ selectedProject, selectedSubprojectId, onSubprojectSelect }) => {
+}> = React.memo(({ selectedProject, selectedSubprojectId, onSubprojectSelect }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   
-  const filteredSubprojects = selectedProject.subprojects.filter(subproject =>
-    subproject.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredSubprojects = React.useMemo(() => 
+    selectedProject.subprojects.filter(subproject =>
+      subproject.name.toLowerCase().includes(searchTerm.toLowerCase())
+    ), [selectedProject.subprojects, searchTerm]);
+
+  const handleSubprojectClick = useCallback((subprojectId: string) => {
+    onSubprojectSelect(subprojectId);
+    setIsOpen(false);
+    setSearchTerm('');
+  }, [onSubprojectSelect]);
 
   return (
     <div className="relative group">
@@ -180,11 +222,7 @@ const SubprojectSearch: React.FC<{
                     ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 font-medium'
                     : 'hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
                 } first:rounded-t-xl last:rounded-b-xl`}
-                onClick={() => {
-                  onSubprojectSelect(subproject.id);
-                  setIsOpen(false);
-                  setSearchTerm('');
-                }}
+                onClick={() => handleSubprojectClick(subproject.id)}
               >
                 <span className="truncate">{subproject.name}</span>
               </div>
@@ -198,13 +236,19 @@ const SubprojectSearch: React.FC<{
       )}
     </div>
   );
-};
+});
+
+SubprojectSearch.displayName = 'SubprojectSearch';
 
 const FrequentSubprojects: React.FC<{
   frequentSubprojects: Subproject[];
   selectedSubprojectId: string;
   onSubprojectSelect: (subprojectId: string) => void;
-}> = ({ frequentSubprojects, selectedSubprojectId, onSubprojectSelect }) => {
+}> = React.memo(({ frequentSubprojects, selectedSubprojectId, onSubprojectSelect }) => {
+  const handleSubprojectClick = useCallback((subprojectId: string) => {
+    onSubprojectSelect(subprojectId);
+  }, [onSubprojectSelect]);
+
   if (frequentSubprojects.length === 0) {
     return (
       <div className="text-center py-6 text-gray-400 dark:text-gray-500 text-sm">
@@ -223,14 +267,16 @@ const FrequentSubprojects: React.FC<{
               ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 shadow-sm'
               : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 hover:shadow-sm'
           } transform hover:scale-[1.02] active:scale-[0.98]`}
-          onClick={() => onSubprojectSelect(subproject.id)}
+          onClick={() => handleSubprojectClick(subproject.id)}
         >
           <span className="truncate max-w-[120px]">{subproject.name}</span>
         </button>
       ))}
     </div>
   );
-};
+});
+
+FrequentSubprojects.displayName = 'FrequentSubprojects';
 
 // ========== Main Component ==========
 const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
@@ -247,6 +293,18 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
   const [frequentSubprojectsEnabled, setFrequentSubprojectsEnabled] = useState(true);
   const [frequentProjects, setFrequentProjects] = useState<Project[]>([]);
   const [frequentSubprojects, setFrequentSubprojects] = useState<Subproject[]>([]);
+
+  // Debug logging
+  console.log('ProjectSelector - projects:', projects);
+  console.log('ProjectSelector - selectedProjectId:', selectedProjectId);
+
+  // Memoized selected project and subproject
+  const selectedProject = React.useMemo(() => 
+    projects.find(p => p.id === selectedProjectId), [projects, selectedProjectId]);
+  
+  const selectedSubproject = React.useMemo(() => 
+    selectedProject?.subprojects.find(s => s.id === selectedSubprojectId), 
+    [selectedProject, selectedSubprojectId]);
 
   // Track frequent projects based on selection count
   useEffect(() => {
@@ -269,28 +327,25 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
     }
   }, [selectedProjectId, projects]);
 
-  const selectedProject = projects.find(p => p.id === selectedProjectId);
-  const selectedSubproject = selectedProject?.subprojects.find(s => s.id === selectedSubprojectId);
-
-  const handleProjectSelect = (projectId: string) => {
+  const handleProjectSelect = useCallback((projectId: string) => {
     const project = projects.find(p => p.id === projectId);
     if (project) {
       onProjectSelect(projectId);
     }
-  };
+  }, [projects, onProjectSelect]);
 
-  const handleSubprojectSelect = (subprojectId: string) => {
+  const handleSubprojectSelect = useCallback((subprojectId: string) => {
     if (selectedProject) {
       onSubprojectSelect(subprojectId);
     }
-  };
+  }, [selectedProject, onSubprojectSelect]);
 
   return (
     <div className="space-y-8 flex flex-col h-full">
       {/* Project Search */}
       <div className="space-y-3">
         <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wider">
-          Projects
+          Projects ({projects.length})
         </h3>
         <ProjectSearch
           projects={projects}
@@ -345,5 +400,7 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
     </div>
   );
 });
+
+ProjectSelector.displayName = 'ProjectSelector';
 
 export default ProjectSelector;

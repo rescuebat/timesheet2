@@ -55,6 +55,10 @@ const TimeTracker = () => {
     const [currentFocus, setCurrentFocus] = useState<'project' | 'subproject' | 'timer'>('project');
     const [currentTime, setCurrentTime] = useState(new Date());
 
+    // Debug logging
+    console.log('TimeTracker - projects:', projects);
+    console.log('TimeTracker - selectedProjectId:', selectedProjectId);
+
     // Use custom hooks
     const { isTimerRunning } = useTimerStatus();
     const { queuedProjects, handlePauseProject: pauseProject, handleResumeProject: resumeProject, handleStopQueuedProject } = useQueuedProjects();

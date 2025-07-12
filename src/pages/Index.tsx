@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Calendar, Moon, Sun } from 'lucide-react';
@@ -7,25 +7,19 @@ import ExcelView from '@/components/ExcelView';
 import Holidays from '@/components/Holidays';
 import Settings from '@/components/Settings';
 import LoginPage from '@/components/LoginPage';
+import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { storageService } from '@/services/storageService';
 
-const Index = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    const saved = localStorage.getItem('is-logged-in');
-    return saved ? JSON.parse(saved) : false;
-  });
+const Index = React.memo(() => {
+  const [isLoggedIn, setIsLoggedIn] = useLocalStorage('is-logged-in', false);
   const [activeTab, setActiveTab] = useState('tracker');
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    const saved = localStorage.getItem('dark-mode');
-    return saved ? JSON.parse(saved) : false;
-  });
+  const [isDarkMode, setIsDarkMode] = useLocalStorage('dark-mode', false);
 
-  const handleLogin = () => {
+  const handleLogin = useCallback(() => {
     setIsLoggedIn(true);
-    localStorage.setItem('is-logged-in', JSON.stringify(true));
-  };
+  }, [setIsLoggedIn]);
 
   useEffect(() => {
-    localStorage.setItem('dark-mode', JSON.stringify(isDarkMode));
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
     } else {
@@ -33,15 +27,15 @@ const Index = () => {
     }
   }, [isDarkMode]);
 
+  const handleSwitchToExcel = useCallback(() => {
+    setActiveTab('data');
+  }, []);
+
+  const handleSwitchToDaily = useCallback(() => {
+    setActiveTab('data');
+  }, []);
+
   useEffect(() => {
-    const handleSwitchToExcel = () => {
-      setActiveTab('data');
-    };
-
-    const handleSwitchToDaily = () => {
-      setActiveTab('data');
-    };
-
     window.addEventListener('switchToExcelView', handleSwitchToExcel);
     window.addEventListener('switchToDailyView', handleSwitchToDaily);
     
@@ -49,6 +43,20 @@ const Index = () => {
       window.removeEventListener('switchToExcelView', handleSwitchToExcel);
       window.removeEventListener('switchToDailyView', handleSwitchToDaily);
     };
+  }, [handleSwitchToExcel, handleSwitchToDaily]);
+
+  const handleDarkModeToggle = useCallback(() => {
+    setIsDarkMode(!isDarkMode);
+  }, [isDarkMode, setIsDarkMode]);
+
+  const handleClearStorage = useCallback(() => {
+    localStorage.clear();
+    window.location.reload();
+  }, []);
+
+  const handleForceReloadProjects = useCallback(() => {
+    storageService.clearAllCache();
+    window.location.reload();
   }, []);
 
   if (!isLoggedIn) {
@@ -61,10 +69,34 @@ const Index = () => {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => setIsDarkMode(!isDarkMode)}
+          onClick={handleDarkModeToggle}
           className="p-4 rounded-2xl shadow-2xl hover:shadow-2xl bg-card/90 backdrop-blur-xl border border-border/30 hover:border-border/50 transition-all duration-300"
         >
           {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+        </Button>
+      </div>
+      
+      {/* Temporary debug button */}
+      <div className="fixed top-6 left-20 z-50">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleClearStorage}
+          className="p-4 rounded-2xl shadow-2xl hover:shadow-2xl bg-red-500/90 backdrop-blur-xl border border-border/30 hover:border-border/50 transition-all duration-300 text-white"
+        >
+          Clear Storage
+        </Button>
+      </div>
+
+      {/* Force reload projects button */}
+      <div className="fixed top-6 left-36 z-50">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleForceReloadProjects}
+          className="p-4 rounded-2xl shadow-2xl hover:shadow-2xl bg-blue-500/90 backdrop-blur-xl border border-border/30 hover:border-border/50 transition-all duration-300 text-white"
+        >
+          Reload Projects
         </Button>
       </div>
       
@@ -117,6 +149,8 @@ const Index = () => {
       </div>
     </div>
   );
-};
+});
+
+Index.displayName = 'Index';
 
 export default Index;

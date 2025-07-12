@@ -5,13 +5,58 @@ import { useState, useEffect, useCallback } from 'react';
 import { Project, Subproject } from '@/types';
 import { storageService } from '@/services/storageService';
 
+// Default projects to show when no projects exist
+const getDefaultProjects = (): Project[] => [
+  {
+    id: '1',
+    name: 'Work',
+    subprojects: [
+      { id: '1-1', name: 'Development', totalTime: 0 },
+      { id: '1-2', name: 'Meetings', totalTime: 0 },
+      { id: '1-3', name: 'Planning', totalTime: 0 }
+    ],
+    totalTime: 0
+  },
+  {
+    id: '2',
+    name: 'Personal',
+    subprojects: [
+      { id: '2-1', name: 'Learning', totalTime: 0 },
+      { id: '2-2', name: 'Exercise', totalTime: 0 },
+      { id: '2-3', name: 'Reading', totalTime: 0 }
+    ],
+    totalTime: 0
+  },
+  {
+    id: '3',
+    name: 'Study',
+    subprojects: [
+      { id: '3-1', name: 'Research', totalTime: 0 },
+      { id: '3-2', name: 'Writing', totalTime: 0 },
+      { id: '3-3', name: 'Review', totalTime: 0 }
+    ],
+    totalTime: 0
+  }
+];
+
 export const useProjectManagement = () => {
   const [projects, setProjects] = useState<Project[]>([]);
 
   // Load projects on mount
   useEffect(() => {
     const loadedProjects = storageService.getProjects();
-    setProjects(loadedProjects);
+    console.log('useProjectManagement - loadedProjects:', loadedProjects);
+    
+    // If no projects exist, create default projects
+    if (loadedProjects.length === 0) {
+      console.log('useProjectManagement - creating default projects');
+      const defaultProjects = getDefaultProjects();
+      storageService.saveProjects(defaultProjects);
+      setProjects(defaultProjects);
+    } else {
+      console.log('useProjectManagement - using existing projects');
+      setProjects(loadedProjects);
+    }
   }, []);
 
   // Save projects whenever they change
