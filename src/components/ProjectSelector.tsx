@@ -215,7 +215,7 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
     
     // Start the timer if ref is available
     if (stopwatchRef && stopwatchRef.current && typeof stopwatchRef.current.handleStart === 'function') {
-      setTimeout(() => { stopwatchRef.current?.handleStart(); }, 0);
+      setTimeout(() => { stopwatchRef.current?.handleStart(); }, 100);
     }
     // Timer would start here
     console.log('Timer started for:', { project: project.name, subproject: subproject.name });
