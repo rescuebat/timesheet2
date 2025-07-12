@@ -276,10 +276,6 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
     const project = projects.find(p => p.id === projectId);
     if (project) {
       onProjectSelect(projectId);
-      // Auto-select first subproject if none selected
-      if (project.subprojects.length > 0 && !selectedSubprojectId) {
-        onSubprojectSelect(project.subprojects[0].id);
-      }
     }
   };
 

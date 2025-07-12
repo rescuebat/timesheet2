@@ -48,49 +48,47 @@ const CurrentSelectionDisplay: React.FC<CurrentSelectionDisplayProps> = ({
                             <div className="absolute inset-0 w-4 h-4 rounded-full bg-white animate-ping opacity-75"></div>
                         )}
                     </div>
-                    <div className={`text-xs font-bold uppercase tracking-[0.15em] leading-relaxed ${selectedProject && selectedSubproject ? 'text-gray-300' : 'text-black'}`}>
-                        Currently<br />Tracking
-                    </div>
+                    {(selectedProject && selectedSubproject) && (
+                        <div className="text-xs font-bold uppercase tracking-[0.15em] leading-relaxed text-gray-300">
+                            Currently<br />Tracking
+                        </div>
+                    )}
                 </div>
 
                 {/* Centered Project and Subproject Section */}
-                <div className="flex items-center justify-center flex-1">
-                    {/* Project Section */}
-                    <div className="px-12 min-w-0">
-                        <div className={`text-xs font-bold uppercase tracking-[0.15em] mb-3 ${selectedProject && selectedSubproject ? 'text-gray-300' : 'text-black'}`}>
-                            Project
-                        </div>
-                        <div className="text-2xl font-semibold tracking-tight truncate">
-                            {selectedProject ? (
+                {(selectedProject && selectedSubproject) && (
+                    <div className="flex items-center justify-center flex-1">
+                        {/* Project Section */}
+                        <div className="px-12 min-w-0">
+                            <div className="text-xs font-bold uppercase tracking-[0.15em] mb-3 text-gray-300">
+                                Project
+                            </div>
+                            <div className="text-2xl font-semibold tracking-tight truncate">
                                 <ShinyText
                                     text={selectedProject.name}
-                                    disabled={!selectedProject || !selectedSubproject}
+                                    disabled={false}
                                     speed={3}
-                                    className={selectedProject && selectedSubproject ? "text-white" : "text-black"}
+                                    className="text-white"
                                 />
-                            ) : (
-                                <span className={selectedProject && selectedSubproject ? "text-white" : "text-black"}>No Project Selected</span>
-                            )}
+                            </div>
                         </div>
-                    </div>
 
-                    {/* Subproject Section - Only show if subproject is selected */}
-                    {selectedSubproject && (
+                        {/* Subproject Section */}
                         <div className="px-12 min-w-0">
-                            <div className={`text-xs font-bold uppercase tracking-[0.15em] mb-3 ${selectedProject && selectedSubproject ? 'text-gray-300' : 'text-black'}`}>
+                            <div className="text-xs font-bold uppercase tracking-[0.15em] mb-3 text-gray-300">
                                 Subproject
                             </div>
                             <div className="text-2xl font-semibold tracking-tight truncate">
                                 <ShinyText
                                     text={selectedSubproject.name}
-                                    disabled={!selectedProject || !selectedSubproject}
+                                    disabled={false}
                                     speed={3}
-                                    className={selectedProject && selectedSubproject ? "text-white" : "text-black"}
+                                    className="text-white"
                                 />
                             </div>
                         </div>
-                    )}
-                </div>
+                    </div>
+                )}
 
                 {/* Time zones - Vertically stacked on the right */}
                 <div className="flex flex-col space-y-1">
