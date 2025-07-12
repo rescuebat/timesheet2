@@ -177,7 +177,7 @@ const TimeTracker = () => {
                     backgroundSize: '24px 24px'
                 }} />
 
-            <div className="relative z-10 max-w-7xl mx-auto px-8 py-12">
+            <div className="relative z-10 w-full max-w-full px-0 py-0 flex flex-col gap-8">
                 {/* Current Selection Display with ClickSpark */}
                 <ClickSpark
                     sparkColor='#fff'
