@@ -7,6 +7,42 @@ import ProjectSelector from './ProjectSelector';
 import StopwatchPanel from './StopwatchPanel';
 import QueuedProjects, { QueuedProject } from './QueuedProjects';
 
+// ShinyText Component
+const ShinyText = ({ text, disabled = false, speed = 3, className = '' }) => {
+  if (disabled) {
+    return <span className={className}>{text}</span>;
+  }
+
+  const animationDuration = `${speed}s`;
+
+  return (
+    <span 
+      className={`inline-block ${className}`}
+      style={{
+        color: '#b5b5b5a4',
+        background: 'linear-gradient(120deg, rgba(255, 255, 255, 0) 40%, rgba(255, 255, 255, 0.8) 50%, rgba(255, 255, 255, 0) 60%)',
+        backgroundSize: '200% 100%',
+        backgroundClip: 'text',
+        WebkitBackgroundClip: 'text',
+        display: 'inline-block',
+        animation: `shine ${animationDuration} linear infinite`
+      }}
+    >
+      {text}
+      <style jsx>{`
+        @keyframes shine {
+          0% {
+            background-position: 100%;
+          }
+          100% {
+            background-position: -100%;
+          }
+        }
+      `}</style>
+    </span>
+  );
+};
+
 export interface Project {
   id: string;
   name: string;
@@ -51,6 +87,7 @@ const TimeTracker = () => {
   });
   const [resumedProject, setResumedProject] = useState<QueuedProject | undefined>();
   const [currentFocus, setCurrentFocus] = useState<'project' | 'subproject' | 'timer'>('project');
+  const [isTimerRunning, setIsTimerRunning] = useState<boolean>(false);
 
   // Reference to the stopwatch panel for keyboard actions
   const stopwatchRef = React.useRef<{ 
@@ -68,6 +105,18 @@ const TimeTracker = () => {
     confirmProjectSelection: () => void,
     confirmSubprojectSelection: () => void
   } | null>(null);
+
+  // Check timer status on mount and periodically
+  useEffect(() => {
+    const checkTimerStatus = () => {
+      const stopwatchState = storageService.getStopwatchState();
+      setIsTimerRunning(stopwatchState?.isRunning || false);
+    };
+
+    checkTimerStatus();
+    const interval = setInterval(checkTimerStatus, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Update project times when time logs change
   useEffect(() => {
@@ -297,15 +346,59 @@ const TimeTracker = () => {
            }} />
       
       <div className="relative z-10 max-w-7xl mx-auto px-8 py-12">
-        {/* Selected Project/Subproject Display - Moved to top left */}
-        {selectedProject && selectedSubproject && (
-          <div className="mb-8 p-6 rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.05)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] transition-all duration-500 ease-out bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-0">
-            <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wider">Current Selection</div>
-            <div className="text-xl font-medium text-gray-900 dark:text-gray-100 tracking-tight">
-              {selectedProject.name} → {selectedSubproject.name}
+        {/* Updated Current Selection Display - Always visible */}
+        <div className="mb-8 p-8 rounded-3xl bg-black shadow-2xl border border-gray-800 transition-all duration-700 ease-out hover:shadow-3xl hover:scale-[1.01] hover:-translate-y-0.5">
+          <div className="flex items-center justify-between">
+            {/* Currently Tracking Indicator */}
+            <div className="flex items-center space-x-4 min-w-0">
+              <div className="relative">
+                <div className={`w-4 h-4 rounded-full bg-white ${isTimerRunning ? 'animate-pulse' : ''}`}></div>
+                {isTimerRunning && (
+                  <div className="absolute inset-0 w-4 h-4 rounded-full bg-white animate-ping opacity-75"></div>
+                )}
+              </div>
+              <div className="text-xs font-bold text-gray-300 uppercase tracking-[0.15em] leading-relaxed">
+                Currently<br />Tracking
+              </div>
             </div>
+            
+            {/* Project Section */}
+            <div className="flex-1 px-8 min-w-0">
+              <div className="text-xs font-bold text-gray-300 uppercase tracking-[0.15em] mb-2">
+                Project
+              </div>
+              <div className="text-2xl font-semibold tracking-tight truncate">
+                {selectedProject ? (
+                  <ShinyText 
+                    text={selectedProject.name} 
+                    disabled={false} 
+                    speed={3} 
+                    className="text-white" 
+                  />
+                ) : (
+                  <span className="text-white">No Project Selected</span>
+                )}
+              </div>
+            </div>
+            
+            {/* Subproject Section - Only show if subproject is selected */}
+            {selectedSubproject && (
+              <div className="flex-1 px-8 min-w-0">
+                <div className="text-xs font-bold text-gray-300 uppercase tracking-[0.15em] mb-2">
+                  Subproject
+                </div>
+                <div className="text-2xl font-semibold tracking-tight truncate">
+                  <ShinyText 
+                    text={selectedSubproject.name} 
+                    disabled={false} 
+                    speed={3} 
+                    className="text-white" 
+                  />
+                </div>
+              </div>
+            )}
           </div>
-        )}
+        </div>
 
         {/* Main Grid */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
