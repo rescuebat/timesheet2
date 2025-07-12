@@ -576,7 +576,7 @@ const TimeTracker = () => {
                     <div className="mb-8 p-8 rounded-3xl bg-black shadow-2xl border border-gray-800 transition-all duration-700 ease-out hover:shadow-3xl hover:scale-[1.01] hover:-translate-y-0.5">
                         <div className="flex items-center justify-between">
                             {/* Currently Tracking Indicator */}
-                            <div className="flex items-center space-x-4 min-w-0">
+                            <div className="flex items-center space-x-6 min-w-0">
                                 <div className="relative">
                                     <div className={`w-4 h-4 rounded-full bg-white ${isTimerRunning ? 'animate-pulse' : ''}`}></div>
                                     {isTimerRunning && (
@@ -589,8 +589,8 @@ const TimeTracker = () => {
                             </div>
 
                             {/* Project Section */}
-                            <div className="flex-1 px-8 min-w-0">
-                                <div className="text-xs font-bold text-gray-300 uppercase tracking-[0.15em] mb-2">
+                            <div className="flex-1 px-12 min-w-0">
+                                <div className="text-xs font-bold text-gray-300 uppercase tracking-[0.15em] mb-3">
                                     Project
                                 </div>
                                 <div className="text-2xl font-semibold tracking-tight truncate">
@@ -609,8 +609,8 @@ const TimeTracker = () => {
 
                             {/* Subproject Section - Only show if subproject is selected */}
                             {selectedSubproject && (
-                                <div className="flex-1 px-8 min-w-0">
-                                    <div className="text-xs font-bold text-gray-300 uppercase tracking-[0.15em] mb-2">
+                                <div className="flex-1 px-12 min-w-0">
+                                    <div className="text-xs font-bold text-gray-300 uppercase tracking-[0.15em] mb-3">
                                         Subproject
                                     </div>
                                     <div className="text-2xl font-semibold tracking-tight truncate">
@@ -624,18 +624,24 @@ const TimeTracker = () => {
                                 </div>
                             )}
 
-                            {/* Time zones - Right end */}
-                            <div className="flex items-center space-x-4 ml-8">
-                                <div className="flex items-center space-x-2">
+                            {/* Time zones - Vertically stacked on the right */}
+                            <div className="flex flex-col space-y-1 ml-12">
+                                <div className="flex items-center space-x-3">
                                     <span className="text-lg">🇮🇳</span>
                                     <span className="text-sm font-semibold text-white">
                                         {formatTime(currentTime, 'Asia/Kolkata')}
                                     </span>
                                 </div>
-                                <div className="flex items-center space-x-2">
+                                <div className="flex items-center space-x-3">
                                     <span className="text-lg">🇬🇧</span>
                                     <span className="text-sm font-semibold text-white">
                                         {formatTime(currentTime, 'Europe/London')}
+                                    </span>
+                                </div>
+                                <div className="flex items-center space-x-3">
+                                    <span className="text-lg">🇺🇸</span>
+                                    <span className="text-sm font-semibold text-white">
+                                        {formatTime(currentTime, 'America/New_York')}
                                     </span>
                                 </div>
                             </div>
