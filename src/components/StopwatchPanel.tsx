@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, forwardRef, useImperativeHandle } from 'react';
 import StopwatchControls from './timesheet/StopwatchControls';
 import ProjectInfo from './timesheet/ProjectInfo';
 import TimeLogDialog from './timesheet/TimeLogDialog';
@@ -15,16 +15,24 @@ interface StopwatchPanelProps {
   onPauseProject: (queuedProject: QueuedProject) => void;
   resumedProject?: QueuedProject;
   onResumedProjectHandled: () => void;
+  currentFocus?: 'project' | 'subproject' | 'timer';
 }
 
-const StopwatchPanel: React.FC<StopwatchPanelProps> = ({
+export interface StopwatchPanelRef {
+  handleStartStop: () => void;
+  handlePause: () => void;
+  handleLogTime: () => void;
+}
+
+const StopwatchPanel = forwardRef<StopwatchPanelRef, StopwatchPanelProps>(({
   selectedProject,
   selectedSubproject,
   onLogTime,
   onPauseProject,
   resumedProject,
-  onResumedProjectHandled
-}) => {
+  onResumedProjectHandled,
+  currentFocus
+}, ref) => {
   const [showDescriptionDialog, setShowDescriptionDialog] = useState(false);
   const [description, setDescription] = useState('');
   const [pendingLogData, setPendingLogData] = useState<{duration: number, startTime: Date, endTime: Date} | null>(null);
@@ -144,6 +152,6 @@ const StopwatchPanel: React.FC<StopwatchPanelProps> = ({
       </StopwatchManager>
     </div>
   );
-};
+});
 
 export default StopwatchPanel;

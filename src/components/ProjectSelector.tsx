@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 
 // ========== Interfaces ==========
 interface Project {
@@ -22,6 +22,17 @@ interface ProjectSelectorProps {
   onSubprojectSelect: (subprojectId: string) => void;
   onAddProject: (projectName: string, subprojectName?: string) => void;
   onAddSubproject: (projectId: string, subprojectName: string) => void;
+  currentFocus?: 'project' | 'subproject' | 'timer';
+  onFocusChange?: (focus: 'project' | 'subproject' | 'timer') => void;
+}
+
+export interface ProjectSelectorRef {
+  focusProjectSearch: () => void;
+  focusSubprojectSearch: () => void;
+  selectProject: (direction: 'up' | 'down') => void;
+  selectSubproject: (direction: 'up' | 'down') => void;
+  confirmProjectSelection: () => void;
+  confirmSubprojectSelection: () => void;
 }
 
 // ========== Helper Components ==========
@@ -222,15 +233,17 @@ const FrequentSubprojects: React.FC<{
 };
 
 // ========== Main Component ==========
-const ProjectSelector: React.FC<ProjectSelectorProps> = ({
+const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
   projects,
   selectedProjectId,
   selectedSubprojectId,
   onProjectSelect,
   onSubprojectSelect,
   onAddProject,
-  onAddSubproject
-}) => {
+  onAddSubproject,
+  currentFocus,
+  onFocusChange
+}, ref) => {
   const [frequentSubprojectsEnabled, setFrequentSubprojectsEnabled] = useState(true);
   const [frequentProjects, setFrequentProjects] = useState<Project[]>([]);
   const [frequentSubprojects, setFrequentSubprojects] = useState<Subproject[]>([]);
@@ -335,6 +348,6 @@ const ProjectSelector: React.FC<ProjectSelectorProps> = ({
       )}
     </div>
   );
-};
+});
 
 export default ProjectSelector;
