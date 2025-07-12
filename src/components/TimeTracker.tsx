@@ -296,6 +296,7 @@ const TimeTracker = () => {
     const [resumedProject, setResumedProject] = useState<QueuedProject | undefined>();
     const [currentFocus, setCurrentFocus] = useState<'project' | 'subproject' | 'timer'>('project');
     const [isTimerRunning, setIsTimerRunning] = useState<boolean>(false);
+    const [currentTime, setCurrentTime] = useState(new Date());
 
     // Reference to the stopwatch panel for keyboard actions
     const stopwatchRef = React.useRef<{
@@ -313,6 +314,15 @@ const TimeTracker = () => {
         confirmProjectSelection: () => void,
         confirmSubprojectSelection: () => void
     } | null>(null);
+
+    // Update current time every second
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrentTime(new Date());
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, []);
 
     // Check timer status on mount and periodically
     useEffect(() => {
@@ -532,6 +542,16 @@ const TimeTracker = () => {
         };
     }, [currentFocus]);
 
+    // Format time functions
+    const formatTime = (date: Date, timezone: string) => {
+        return new Intl.DateTimeFormat('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            timeZone: timezone,
+            hour12: true
+        }).format(date);
+    };
+
     const selectedProject = projects.find(p => p.id === selectedProjectId);
     const selectedSubproject = selectedProject?.subprojects.find(s => s.id === selectedSubprojectId);
 
@@ -603,6 +623,22 @@ const TimeTracker = () => {
                                     </div>
                                 </div>
                             )}
+
+                            {/* Time zones - Right end */}
+                            <div className="flex items-center space-x-4 ml-8">
+                                <div className="flex items-center space-x-2">
+                                    <span className="text-lg">🇮🇳</span>
+                                    <span className="text-sm font-semibold text-white">
+                                        {formatTime(currentTime, 'Asia/Kolkata')}
+                                    </span>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <span className="text-lg">🇬🇧</span>
+                                    <span className="text-sm font-semibold text-white">
+                                        {formatTime(currentTime, 'Europe/London')}
+                                    </span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
