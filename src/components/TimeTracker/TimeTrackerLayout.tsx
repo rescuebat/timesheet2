@@ -52,7 +52,7 @@ const TimeTrackerLayout: React.FC<TimeTrackerLayoutProps> = ({
     isTimerRunning
 }) => {
     return (
-        <div className="w-full min-h-[600px] rounded-b-2xl shadow-lg bg-white/80 dark:bg-gray-900/80 flex overflow-hidden px-10 py-10 mt-8">
+        <div className="w-full min-h-[600px] flex overflow-hidden px-10 py-10 mt-8">
             <div className="flex-1">
                 <ProjectSelector
                     ref={projectSelectorRef}
@@ -71,7 +71,7 @@ const TimeTrackerLayout: React.FC<TimeTrackerLayoutProps> = ({
                 />
             </div>
             <div className="flex-1 flex items-center justify-center">
-                <div className="bg-white rounded-2xl shadow-md border border-gray-200 px-8 py-8 flex flex-col items-center justify-center w-full min-h-[600px] mt-16">
+                <div className="bg-white rounded-2xl shadow-lg border-2 border-gray-200 px-8 py-8 flex flex-col items-center justify-center w-full min-h-[600px] mt-16">
                     <StopwatchPanel
                         ref={stopwatchRef}
                         selectedProject={selectedProject}
