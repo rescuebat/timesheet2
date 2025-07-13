@@ -71,17 +71,19 @@ const TimeTrackerLayout: React.FC<TimeTrackerLayoutProps> = ({
                 />
             </div>
             <div className="flex-1 flex items-center justify-center">
-                <StopwatchPanel
-                    ref={stopwatchRef}
-                    selectedProject={selectedProject}
-                    selectedSubproject={selectedSubproject}
-                    onLogTime={onLogTime}
-                    onPauseProject={onPauseProject}
-                    resumedProject={resumedProject}
-                    onResumedProjectHandled={onResumedProjectHandled}
-                    currentFocus={currentFocus}
-                    onTimerStopped={onTimerStopped}
-                />
+                <div className="bg-white rounded-2xl shadow-md border border-gray-200 px-8 py-8 flex flex-col items-center justify-center w-full min-h-[600px] mt-16">
+                    <StopwatchPanel
+                        ref={stopwatchRef}
+                        selectedProject={selectedProject}
+                        selectedSubproject={selectedSubproject}
+                        onLogTime={onLogTime}
+                        onPauseProject={onPauseProject}
+                        resumedProject={resumedProject}
+                        onResumedProjectHandled={onResumedProjectHandled}
+                        currentFocus={currentFocus}
+                        onTimerStopped={onTimerStopped}
+                    />
+                </div>
             </div>
         </div>
     );
