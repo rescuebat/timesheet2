@@ -1,6 +1,7 @@
 import React, { useState, useEffect, forwardRef, useImperativeHandle, useCallback } from 'react';
 import { Search, Play, ChevronDown } from 'lucide-react';
 import { StopwatchPanelRef } from './StopwatchPanel';
+import ShinyText from './common/ShinyText';
 
 // ========== Interfaces ==========
 interface Project {
@@ -351,12 +352,13 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
     <div className="w-full h-full flex flex-col">
       {/* Search Bars */}
       <div className="flex w-full gap-4 mb-8 mt-[-1%]" style={{ width: '100%' }}>
-        <div className="w-[100%] flex-shrink-0 flex-grow-0 relative" style={{ marginLeft: '-2%' }}>
-          <div className="relative">
+        {/* Main Project Search */}
+        <div className="w-full flex-shrink-0 flex-grow-0 relative" style={{ marginLeft: '-2%' }}>
+          <div className="relative w-full h-16">
             <input
               ref={projectInputRef}
               type="text"
-              placeholder="Search for main project"
+              placeholder={undefined}
               value={projectSearch}
               onChange={(e) => {
                 setProjectSearch(e.target.value);
@@ -364,8 +366,12 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
               }}
               onClick={() => setShowProjectDropdown(true)}
               onKeyDown={handleProjectInputKeyDown}
-              className="w-full px-5 py-4 pr-12 text-white bg-gray-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-400 transition-all duration-200 text-base font-medium placeholder-gray-400"
+              className="w-full h-16 px-5 py-4 pr-12 text-white bg-gray-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-400 transition-all duration-200 text-base font-medium placeholder-gray-400 text-lg"
+              style={{ fontSize: '1.125rem' }}
             />
+            <div className="absolute left-5 top-1/2 transform -translate-y-1/2 pointer-events-none">
+              <ShinyText text="Search for main project" className="text-lg" />
+            </div>
             <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white">
               <Search size={24} strokeWidth={2} />
             </div>
@@ -393,11 +399,12 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
             </div>
           )}
         </div>
-        <div className="w-[100%] flex-shrink-0 flex-grow-0 relative">
-          <div className="relative">
+        {/* Subproject Search */}
+        <div className="w-full flex-shrink-0 flex-grow-0 relative">
+          <div className="relative w-full h-16">
             <input
               type="text"
-              placeholder="Search for subproject"
+              placeholder={undefined}
               value={subprojectSearch}
               onChange={(e) => {
                 setSubprojectSearch(e.target.value);
@@ -406,10 +413,14 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
               onClick={() => setShowSubprojectDropdown(true)}
               onFocus={() => setShowSubprojectDropdown(true)}
               onKeyDown={handleSubprojectInputKeyDown}
-              className="w-full px-5 py-4 pr-12 text-white bg-gray-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-400 transition-all duration-200 text-base font-medium placeholder-gray-400"
+              className="w-full h-16 px-5 py-4 pr-12 text-white bg-gray-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-400 transition-all duration-200 text-base font-medium placeholder-gray-400 text-lg"
+              style={{ fontSize: '1.125rem' }}
             />
-            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white">
-              <Search size={20} strokeWidth={2} />
+            <div className="absolute left-5 top-1/2 transform -translate-y-1/2 pointer-events-none">
+              <ShinyText text="Search for subproject" className="text-lg" />
+            </div>
+            <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white">
+              <Search size={24} strokeWidth={2} />
             </div>
           </div>
           
