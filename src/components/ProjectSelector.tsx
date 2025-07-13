@@ -277,6 +277,10 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
   const projectInputRef = useRef<HTMLInputElement>(null);
   const subprojectInputRef = useRef<HTMLInputElement>(null);
 
+  // Add refs for dropdown items
+  const projectDropdownRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const subprojectDropdownRefs = useRef<(HTMLDivElement | null)[]>([]);
+
   // Track which input is currently focused
   const [focusedInput, setFocusedInput] = useState<'project' | 'subproject' | null>(null);
 
@@ -290,7 +294,6 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
         setProjectSearch('');
         onProjectSelect(''); // Deselect any project
         setShowProjectDropdown(true);
-        setProjectDropdownIndex(-1);
         projectInputRef.current?.focus();
         e.preventDefault();
       }
@@ -301,15 +304,21 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
   }, [isTimerRunning, onProjectSelect, focusedInput]);
 
   // Handle keyboard navigation in project dropdown
-  const handleProjectInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleProjectInputKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     if (!showProjectDropdown) return;
     
     if (e.key === 'ArrowDown') {
-      setProjectDropdownIndex((prev) => Math.min(prev + 1, filteredProjects.length - 1));
       e.preventDefault();
+      setProjectDropdownIndex(prev => {
+        const newIndex = prev < 0 ? 0 : prev + 1;
+        return newIndex < filteredProjects.length ? newIndex : prev;
+      });
     } else if (e.key === 'ArrowUp') {
-      setProjectDropdownIndex((prev) => Math.max(prev - 1, 0));
       e.preventDefault();
+      setProjectDropdownIndex(prev => {
+        const newIndex = prev <= 0 ? 0 : prev - 1;
+        return newIndex;
+      });
     } else if ((e.key === 'Enter' || e.key === 'Tab') && projectDropdownIndex >= 0) {
       const project = filteredProjects[projectDropdownIndex];
       if (project) {
@@ -323,26 +332,27 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
       }
       e.preventDefault();
     }
-  };
-
-  // Reset highlight when search changes
-  useEffect(() => {
-    setProjectDropdownIndex(-1);
-  }, [projectSearch, showProjectDropdown]);
+  }, [showProjectDropdown, projectDropdownIndex, filteredProjects.length, handleProjectSelect]);
 
   // Keyboard navigation state for subproject dropdown
   const [subprojectDropdownIndex, setSubprojectDropdownIndex] = useState<number>(-1);
 
   // Handle keyboard navigation in subproject dropdown
-  const handleSubprojectInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleSubprojectInputKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     if (!showSubprojectDropdown) return;
     
     if (e.key === 'ArrowDown') {
-      setSubprojectDropdownIndex((prev) => Math.min(prev + 1, filteredSubprojects.length - 1));
       e.preventDefault();
+      setSubprojectDropdownIndex(prev => {
+        const newIndex = prev < 0 ? 0 : prev + 1;
+        return newIndex < filteredSubprojects.length ? newIndex : prev;
+      });
     } else if (e.key === 'ArrowUp') {
-      setSubprojectDropdownIndex((prev) => Math.max(prev - 1, 0));
       e.preventDefault();
+      setSubprojectDropdownIndex(prev => {
+        const newIndex = prev <= 0 ? 0 : prev - 1;
+        return newIndex;
+      });
     } else if ((e.key === 'Enter' || e.key === 'Tab') && subprojectDropdownIndex >= 0) {
       const subproject = filteredSubprojects[subprojectDropdownIndex];
       if (subproject) {
@@ -355,12 +365,22 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
       }
       e.preventDefault();
     }
-  };
+  }, [showSubprojectDropdown, subprojectDropdownIndex, filteredSubprojects.length, handleSubprojectSelect]);
 
-  // Reset highlight when subproject search changes
+
+
+  // Add useEffect to scroll selected project into view
   useEffect(() => {
-    setSubprojectDropdownIndex(-1);
-  }, [subprojectSearch, showSubprojectDropdown]);
+    if (showProjectDropdown && projectDropdownIndex >= 0 && projectDropdownRefs.current[projectDropdownIndex]) {
+      projectDropdownRefs.current[projectDropdownIndex]?.scrollIntoView({ block: 'nearest' });
+    }
+  }, [projectDropdownIndex, showProjectDropdown]);
+  // Add useEffect to scroll selected subproject into view
+  useEffect(() => {
+    if (showSubprojectDropdown && subprojectDropdownIndex >= 0 && subprojectDropdownRefs.current[subprojectDropdownIndex]) {
+      subprojectDropdownRefs.current[subprojectDropdownIndex]?.scrollIntoView({ block: 'nearest' });
+    }
+  }, [subprojectDropdownIndex, showSubprojectDropdown]);
 
   // Space bar to start/stop timer
   useEffect(() => {
@@ -404,24 +424,10 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
       subprojectInputRef.current?.focus();
     },
     selectProject: (direction: 'up' | 'down') => {
-      if (showProjectDropdown) {
-        setProjectDropdownIndex(prev => {
-          const newIndex = direction === 'down' 
-            ? Math.min(prev + 1, filteredProjects.length - 1)
-            : Math.max(prev - 1, 0);
-          return newIndex;
-        });
-      }
+      // This is handled by the input keydown handlers
     },
     selectSubproject: (direction: 'up' | 'down') => {
-      if (showSubprojectDropdown) {
-        setSubprojectDropdownIndex(prev => {
-          const newIndex = direction === 'down' 
-            ? Math.min(prev + 1, filteredSubprojects.length - 1)
-            : Math.max(prev - 1, 0);
-          return newIndex;
-        });
-      }
+      // This is handled by the input keydown handlers
     },
     confirmProjectSelection: () => {
       if (showProjectDropdown && projectDropdownIndex >= 0) {
@@ -465,9 +471,16 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
                 setProjectSearch(e.target.value);
                 setProjectDropdownSearch(e.target.value);
               }}
-              onClick={() => setShowProjectDropdown(true)}
+              onClick={() => {
+                setShowProjectDropdown(true);
+                setProjectDropdownIndex(-1);
+              }}
               onKeyDown={handleProjectInputKeyDown}
-              onFocus={() => setFocusedInput('project')}
+              onFocus={() => {
+                setFocusedInput('project');
+                setShowProjectDropdown(true);
+                setProjectDropdownIndex(-1);
+              }}
               onBlur={() => setFocusedInput(null)}
               className="w-full h-16 px-5 py-4 pr-12 text-white bg-gray-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-400 transition-all duration-200 text-base font-medium placeholder-gray-400 text-lg"
               style={{ fontSize: '1.125rem' }}
@@ -481,20 +494,23 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
           </div>
       
           {showProjectDropdown && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-10">
-              <div className="max-h-48 overflow-y-auto">
+            <div className="absolute top-full left-0 right-0 mt-3 z-30">
+              <div className="dropdown-glass w-full">
                 {filteredProjects.length > 0 ? (
                   filteredProjects.map((project, idx) => (
                     <div
                       key={project.id}
+                      ref={el => projectDropdownRefs.current[idx] = el}
                       onClick={() => handleProjectSelect(project.id)}
-                      className={`px-4 py-3 text-sm text-gray-900 hover:bg-gray-50 cursor-pointer transition-colors duration-150${projectDropdownIndex === idx ? ' bg-gray-200 font-semibold' : ''}`}
+                      className={`dropdown-item-glass${projectDropdownIndex === idx ? ' selected' : ''}`}
                     >
-                      {project.name}
+                      <div className="item-content">
+                        <div className="item-text">{project.name}</div>
+                      </div>
                     </div>
                   ))
                 ) : (
-                  <div className="px-4 py-6 text-gray-500 text-sm text-center">
+                  <div className="dropdown-item-glass text-center text-gray-400 select-none">
                     {projectDropdownSearch ? 'No projects match your search' : 'No projects available'}
                   </div>
                 )}
@@ -515,10 +531,14 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
                 setSubprojectSearch(e.target.value);
                 setSubprojectDropdownSearch(e.target.value);
               }}
-              onClick={() => setShowSubprojectDropdown(true)}
+              onClick={() => {
+                setShowSubprojectDropdown(true);
+                setSubprojectDropdownIndex(-1);
+              }}
               onFocus={() => {
                 setFocusedInput('subproject');
                 setShowSubprojectDropdown(true);
+                setSubprojectDropdownIndex(-1);
               }}
               onBlur={() => setFocusedInput(null)}
               onKeyDown={handleSubprojectInputKeyDown}
@@ -534,20 +554,23 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
           </div>
 
           {showSubprojectDropdown && selectedProject && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-10">
-              <div className="max-h-48 overflow-y-auto">
+            <div className="absolute top-full left-0 right-0 mt-3 z-30">
+              <div className="dropdown-glass w-full">
                 {filteredSubprojects.length > 0 ? (
                   filteredSubprojects.map((subproject, idx) => (
                     <div
                       key={subproject.id}
+                      ref={el => subprojectDropdownRefs.current[idx] = el}
                       onClick={() => handleSubprojectSelect(subproject.id)}
-                      className={`px-4 py-3 text-sm text-gray-900 hover:bg-gray-50 cursor-pointer transition-colors duration-150${subprojectDropdownIndex === idx ? ' bg-gray-200 font-semibold' : ''}`}
+                      className={`dropdown-item-glass${subprojectDropdownIndex === idx ? ' selected' : ''}`}
                     >
-                      {subproject.name}
+                      <div className="item-content">
+                        <div className="item-text">{subproject.name}</div>
+                      </div>
                     </div>
                   ))
                 ) : (
-                  <div className="px-4 py-6 text-gray-500 text-sm text-center">
+                  <div className="dropdown-item-glass text-center text-gray-400 select-none">
                     No subprojects found
                   </div>
                 )}
