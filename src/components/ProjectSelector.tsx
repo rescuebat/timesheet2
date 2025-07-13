@@ -370,7 +370,7 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
               style={{ fontSize: '1.125rem' }}
             />
             <div className="absolute left-5 top-1/2 transform -translate-y-1/2 pointer-events-none">
-              <ShinyText text="Search for main project" className="text-lg" />
+              {projectSearch === '' && <ShinyText text="Search for main project" className="text-lg" />}
             </div>
             <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white">
               <Search size={24} strokeWidth={2} />
@@ -417,7 +417,7 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
               style={{ fontSize: '1.125rem' }}
             />
             <div className="absolute left-5 top-1/2 transform -translate-y-1/2 pointer-events-none">
-              <ShinyText text="Search for subproject" className="text-lg" />
+              {subprojectSearch === '' && <ShinyText text="Search for subproject" className="text-lg" />}
             </div>
             <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white">
               <Search size={24} strokeWidth={2} />
