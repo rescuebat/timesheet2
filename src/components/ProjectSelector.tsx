@@ -28,6 +28,7 @@ interface ProjectSelectorProps {
   onFocusChange?: (focus: 'project' | 'subproject' | 'timer') => void;
   stopwatchRef?: React.MutableRefObject<StopwatchPanelRef | null>;
   handleStartNewTimerForProject?: (projectId: string, subprojectId: string) => void;
+  isTimerRunning?: boolean;
 }
 
 export interface ProjectSelectorRef {
@@ -52,7 +53,8 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
   currentFocus,
   onFocusChange,
   stopwatchRef,
-  handleStartNewTimerForProject
+  handleStartNewTimerForProject,
+  isTimerRunning
 }, ref) => {
   const [projectSearch, setProjectSearch] = useState('');
   const [subprojectSearch, setSubprojectSearch] = useState('');
@@ -68,64 +70,17 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
   const [combinationUsageCount, setCombinationUsageCount] = useState<Record<string, number>>({});
   const [pendingQuickStart, setPendingQuickStart] = useState<{ project: Project; subproject: Subproject; index: number } | null>(null);
 
-  // Demo data - 5 projects with 4 subprojects each
-  const demoProjects: Project[] = [
-    {
-      id: '1',
-      name: 'Mobile App Development',
-      totalTime: 0,
-      subprojects: [
-        { id: '1-1', name: 'Frontend Development', totalTime: 0 },
-        { id: '1-2', name: 'Backend API', totalTime: 0 },
-        { id: '1-3', name: 'UI/UX Design', totalTime: 0 },
-        { id: '1-4', name: 'Testing & QA', totalTime: 0 }
-      ]
-    },
-    {
-      id: '2',
-      name: 'Website Redesign',
-      totalTime: 0,
-      subprojects: [
-        { id: '2-1', name: 'Design System', totalTime: 0 },
-        { id: '2-2', name: 'Content Creation', totalTime: 0 },
-        { id: '2-3', name: 'SEO Optimization', totalTime: 0 },
-        { id: '2-4', name: 'Performance Optimization', totalTime: 0 }
-      ]
-    },
-    {
-      id: '3',
-      name: 'Marketing Campaign',
-      totalTime: 0,
-      subprojects: [
-        { id: '3-1', name: 'Social Media', totalTime: 0 },
-        { id: '3-2', name: 'Email Marketing', totalTime: 0 },
-        { id: '3-3', name: 'Content Strategy', totalTime: 0 },
-        { id: '3-4', name: 'Analytics & Reporting', totalTime: 0 }
-      ]
-    },
-    {
-      id: '4',
-      name: 'Data Analytics',
-      totalTime: 0,
-      subprojects: [
-        { id: '4-1', name: 'Data Collection', totalTime: 0 },
-        { id: '4-2', name: 'Data Processing', totalTime: 0 },
-        { id: '4-3', name: 'Visualization', totalTime: 0 },
-        { id: '4-4', name: 'Insights & Reporting', totalTime: 0 }
-      ]
-    },
-    {
-      id: '5',
-      name: 'Client Onboarding',
-      totalTime: 0,
-      subprojects: [
-        { id: '5-1', name: 'Requirements Gathering', totalTime: 0 },
-        { id: '5-2', name: 'Project Planning', totalTime: 0 },
-        { id: '5-3', name: 'Documentation', totalTime: 0 },
-        { id: '5-4', name: 'Training & Support', totalTime: 0 }
-      ]
-    }
-  ];
+  // Demo data - 15 projects with 3 subprojects each
+  const demoProjects: Project[] = Array.from({ length: 15 }, (_, i) => ({
+    id: `${i + 1}`,
+    name: `Project ${i + 1}`,
+    totalTime: 0,
+    subprojects: Array.from({ length: 3 }, (_, j) => ({
+      id: `${i + 1}-${j + 1}`,
+      name: `Subproject ${j + 1}`,
+      totalTime: 0
+    }))
+  }));
 
   // Use demo data if no projects provided
   const allProjects = projects.length > 0 ? projects : demoProjects;
@@ -300,6 +255,22 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
     }
   }));
 
+  // Add a ref for the main project input
+  const projectInputRef = React.useRef<HTMLInputElement>(null);
+
+  // Global keydown handler for Enter
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter' && !isTimerRunning) {
+        projectInputRef.current?.focus();
+        setShowProjectDropdown(true);
+        e.preventDefault();
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [isTimerRunning]);
+
   return (
     <div className="w-full h-full flex flex-col">
       {/* Search Bars */}
@@ -307,6 +278,7 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
         <div className="w-[100%] flex-shrink-0 flex-grow-0 relative" style={{ marginLeft: '-2%' }}>
           <div className="relative">
             <input
+              ref={projectInputRef}
               type="text"
               placeholder="Search for main project"
               value={projectSearch}
@@ -321,18 +293,6 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
           
           {showProjectDropdown && (
             <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-10">
-              <div className="p-3 border-b border-gray-100">
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Filter projects..."
-                    value={projectDropdownSearch}
-                    onChange={(e) => setProjectDropdownSearch(e.target.value)}
-                    className="w-full px-3 py-2 text-sm text-gray-900 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-transparent"
-                  />
-                  <Search size={14} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                </div>
-              </div>
               <div className="max-h-48 overflow-y-auto">
                 {filteredProjects.length > 0 ? (
                   filteredProjects.map((project) => (
@@ -370,18 +330,6 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
           
           {showSubprojectDropdown && selectedProject && (
             <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-10">
-              <div className="p-3 border-b border-gray-100">
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Filter subprojects..."
-                    value={subprojectDropdownSearch}
-                    onChange={(e) => setSubprojectDropdownSearch(e.target.value)}
-                    className="w-full px-3 py-2 text-sm text-gray-900 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-transparent"
-                  />
-                  <Search size={14} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                </div>
-              </div>
               <div className="max-h-48 overflow-y-auto">
                 {filteredSubprojects.length > 0 ? (
                   filteredSubprojects.map((subproject) => (
