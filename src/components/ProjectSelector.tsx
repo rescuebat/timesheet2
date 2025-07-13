@@ -303,8 +303,8 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
   return (
     <div className="w-full h-full flex flex-col">
       {/* Search Bars */}
-      <div className="flex gap-4 mb-8">
-        <div className="flex-1 relative">
+      <div className="flex w-full gap-4 mb-8 mt-[-1%]" style={{ width: '100%' }}>
+        <div className="w-[100%] flex-shrink-0 flex-grow-0 relative" style={{ marginLeft: '-2%' }}>
           <div className="relative">
             <input
               type="text"
@@ -353,8 +353,7 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
             </div>
           )}
         </div>
-
-        <div className="flex-1 relative">
+        <div className="w-[100%] flex-shrink-0 flex-grow-0 relative">
           <div className="relative">
             <input
               type="text"

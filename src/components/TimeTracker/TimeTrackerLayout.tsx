@@ -51,7 +51,7 @@ const TimeTrackerLayout: React.FC<TimeTrackerLayoutProps> = ({
 }) => {
     return (
         <div className="w-full min-h-[600px] rounded-b-2xl shadow-lg bg-white/80 dark:bg-gray-900/80 flex overflow-hidden px-10 py-10 mt-8">
-            <div className="flex-1 flex items-center justify-center">
+            <div className="flex-1">
                 <ProjectSelector
                     ref={projectSelectorRef}
                     projects={projects}
