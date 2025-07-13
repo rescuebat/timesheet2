@@ -313,6 +313,40 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
     setProjectDropdownIndex(-1);
   }, [projectSearch, showProjectDropdown]);
 
+  // Keyboard navigation state for subproject dropdown
+  const [subprojectDropdownIndex, setSubprojectDropdownIndex] = useState<number>(-1);
+
+  // Handle keyboard navigation in subproject dropdown
+  const handleSubprojectInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!showSubprojectDropdown) return;
+    if (e.key === 'ArrowDown') {
+      setSubprojectDropdownIndex((prev) => Math.min(prev + 1, filteredSubprojects.length - 1));
+      e.preventDefault();
+    } else if (e.key === 'ArrowUp') {
+      setSubprojectDropdownIndex((prev) => Math.max(prev - 1, 0));
+      e.preventDefault();
+    } else if ((e.key === 'Enter' || e.key === 'Tab') && subprojectDropdownIndex >= 0) {
+      const subproject = filteredSubprojects[subprojectDropdownIndex];
+      if (subproject) {
+        handleSubprojectSelect(subproject.id);
+        setShowSubprojectDropdown(false);
+        setSubprojectDropdownIndex(-1);
+        // Start timer logic: pause running timer if needed, then start new timer
+        if (typeof handleStartNewTimerForProject === 'function') {
+          handleStartNewTimerForProject(selectedProjectId, subproject.id);
+        } else if (stopwatchRef && stopwatchRef.current && typeof stopwatchRef.current.handleStart === 'function') {
+          stopwatchRef.current?.handleStart();
+        }
+      }
+      e.preventDefault();
+    }
+  };
+
+  // Reset highlight when subproject search changes
+  useEffect(() => {
+    setSubprojectDropdownIndex(-1);
+  }, [subprojectSearch, showSubprojectDropdown]);
+
   return (
     <div className="w-full h-full flex flex-col">
       {/* Search Bars */}
@@ -371,6 +405,7 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
               }}
               onClick={() => setShowSubprojectDropdown(true)}
               onFocus={() => setShowSubprojectDropdown(true)}
+              onKeyDown={handleSubprojectInputKeyDown}
               className="w-full px-5 py-4 pr-12 text-white bg-gray-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-400 transition-all duration-200 text-base font-medium placeholder-gray-400"
             />
             <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white">
@@ -382,11 +417,11 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
             <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-10">
               <div className="max-h-48 overflow-y-auto">
                 {filteredSubprojects.length > 0 ? (
-                  filteredSubprojects.map((subproject) => (
+                  filteredSubprojects.map((subproject, idx) => (
                     <div
                       key={subproject.id}
                       onClick={() => handleSubprojectSelect(subproject.id)}
-                      className="px-4 py-3 text-sm text-gray-900 hover:bg-gray-50 cursor-pointer transition-colors duration-150"
+                      className={`px-4 py-3 text-sm text-gray-900 hover:bg-gray-50 cursor-pointer transition-colors duration-150${subprojectDropdownIndex === idx ? ' bg-gray-200 font-semibold' : ''}`}
                     >
                       {subproject.name}
                     </div>
