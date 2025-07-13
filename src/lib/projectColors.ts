@@ -12,28 +12,28 @@ export const generateProjectColor = (projectName: string): string => {
   // Get existing project colors from localStorage to avoid duplicates
   const existingColors = getExistingProjectColors();
   
-  // Extended set of soft, eye-friendly colors for better uniqueness
+  // Extended set of beautiful, matte, bright-yet-soft solid colors
   const softColors = [
-    'rgba(255, 235, 235, 0.7)', // Soft red
-    'rgba(235, 255, 235, 0.7)', // Soft green  
-    'rgba(235, 235, 255, 0.7)', // Soft blue
-    'rgba(255, 255, 235, 0.7)', // Soft yellow
-    'rgba(255, 235, 255, 0.7)', // Soft magenta
-    'rgba(235, 255, 255, 0.7)', // Soft cyan
-    'rgba(255, 245, 235, 0.7)', // Soft orange
-    'rgba(245, 235, 255, 0.7)', // Soft purple
-    'rgba(240, 248, 255, 0.7)', // Soft alice blue
-    'rgba(255, 248, 240, 0.7)', // Soft cornsilk
-    'rgba(240, 255, 240, 0.7)', // Soft honeydew
-    'rgba(255, 240, 245, 0.7)', // Soft lavender blush
-    'rgba(255, 228, 225, 0.7)', // Soft misty rose
-    'rgba(230, 230, 250, 0.7)', // Soft lavender
-    'rgba(255, 250, 205, 0.7)', // Soft lemon chiffon
-    'rgba(240, 255, 255, 0.7)', // Soft azure
-    'rgba(255, 239, 213, 0.7)', // Soft papaya whip
-    'rgba(245, 255, 250, 0.7)', // Soft mint cream
-    'rgba(253, 245, 230, 0.7)', // Soft old lace
-    'rgba(255, 218, 185, 0.7)', // Soft peach puff
+    '#FFB4A2', // Soft coral
+    '#B5EAD7', // Mint
+    '#A0C4FF', // Baby blue
+    '#FFD6A5', // Peach
+    '#BDB2FF', // Lavender
+    '#FDFFB6', // Light yellow
+    '#FFADAD', // Light red
+    '#CAFFBF', // Light green
+    '#9BF6FF', // Sky blue
+    '#FFC6FF', // Pink
+    '#D0F4DE', // Pale green
+    '#FFF1E6', // Cream
+    '#F1C0E8', // Orchid
+    '#FDE2E4', // Blush
+    '#CDEAC0', // Pale mint
+    '#FFF5BA', // Light gold
+    '#B5D0FF', // Soft blue
+    '#E2F0CB', // Light lime
+    '#F6DFEB', // Pale pink
+    '#E4C1F9', // Soft purple
   ];
   
   // Check if this project already has a color assigned
@@ -73,3 +73,20 @@ export const isColorCodedProjectsEnabled = (): boolean => {
   const saved = localStorage.getItem('color-coded-projects-enabled');
   return saved ? JSON.parse(saved) : false;
 };
+
+// Utility to darken a hex color by a percentage
+export function darkenHexColor(hex: string, percent: number = 20): string {
+  // Remove # if present
+  hex = hex.replace('#', '');
+  // Parse r, g, b
+  let r = parseInt(hex.substring(0, 2), 16);
+  let g = parseInt(hex.substring(2, 4), 16);
+  let b = parseInt(hex.substring(4, 6), 16);
+  // Decrease each by percent
+  r = Math.max(0, Math.floor(r * (1 - percent / 100)));
+  g = Math.max(0, Math.floor(g * (1 - percent / 100)));
+  b = Math.max(0, Math.floor(b * (1 - percent / 100)));
+  // Convert back to hex
+  const toHex = (n: number) => n.toString(16).padStart(2, '0');
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}

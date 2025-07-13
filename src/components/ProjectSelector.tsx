@@ -74,6 +74,16 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
   const [pendingQuickStart, setPendingQuickStart] = useState<{ project: Project; subproject: Subproject; index: number } | null>(null);
   const { colorCodedProjectsEnabled } = useSettings();
 
+  // Create refs for callbacks
+  const onProjectSelectRef = useRef(onProjectSelect);
+  const onSubprojectSelectRef = useRef(onSubprojectSelect);
+  
+  // Update refs on every render
+  useEffect(() => {
+    onProjectSelectRef.current = onProjectSelect;
+    onSubprojectSelectRef.current = onSubprojectSelect;
+  });
+
   // Demo data - 15 projects with 3 subprojects each
   const demoProjects: Project[] = Array.from({ length: 15 }, (_, i) => ({
     id: `${i + 1}`,
@@ -101,7 +111,7 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
   useEffect(() => {
     const sorted = [...allProjects]
       .sort((a, b) => (projectUsageCount[b.id] || 0) - (projectUsageCount[a.id] || 0))
-      .slice(0, 5);
+      .slice(0, 6);
     setFrequentProjects(sorted);
   }, [allProjects, projectUsageCount]);
 
@@ -110,7 +120,7 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
     if (selectedProject) {
       const sorted = [...selectedProject.subprojects]
         .sort((a, b) => (subprojectUsageCount[b.id] || 0) - (subprojectUsageCount[a.id] || 0))
-          .slice(0, 5);
+          .slice(0, 6);
         setFrequentSubprojects(sorted);
     } else {
       setFrequentSubprojects([]);
@@ -136,6 +146,41 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
     setSubprojectDropdownSearch('');
   }, [selectedProjectId]);
 
+  const subprojectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastProjectIdRef = useRef<string | null>(null);
+
+  // 17-second timeout logic - fixed
+  useEffect(() => {
+    // Clear any existing timer
+    if (subprojectTimeoutRef.current) {
+      clearTimeout(subprojectTimeoutRef.current);
+      subprojectTimeoutRef.current = null;
+    }
+    
+    // Start new timer if project is selected but no subproject
+    if (selectedProjectId && !selectedSubprojectId) {
+      lastProjectIdRef.current = selectedProjectId;
+      
+      subprojectTimeoutRef.current = setTimeout(() => {
+        // Only clear if still in the same state
+        if (selectedProjectId === lastProjectIdRef.current && !selectedSubprojectId) {
+          onProjectSelectRef.current('');
+          onSubprojectSelectRef.current('');
+          setProjectSearch('');
+          setSubprojectSearch('');
+        }
+      }, 17000);
+    }
+    
+    // Cleanup on unmount
+    return () => {
+      if (subprojectTimeoutRef.current) {
+        clearTimeout(subprojectTimeoutRef.current);
+        subprojectTimeoutRef.current = null;
+      }
+    };
+  }, [selectedProjectId, selectedSubprojectId]);
+
   const handleProjectSelect = useCallback((projectId: string) => {
     const project = allProjects.find(p => p.id === projectId);
     if (project) {
@@ -143,7 +188,6 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
       setProjectSearch(project.name);
       setShowProjectDropdown(false);
       setProjectDropdownSearch('');
-      
       // Track usage
       setProjectUsageCount(prev => ({
         ...prev,
@@ -152,13 +196,12 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
     }
   }, [allProjects, onProjectSelect]);
 
-  // Update handleSubprojectSelect to accept an optional project argument
   const handleSubprojectSelect = useCallback((subprojectId: string, projectOverride?: Project) => {
     const projectToUse = projectOverride || selectedProject;
     if (projectToUse) {
       const subproject = projectToUse.subprojects.find(s => s.id === subprojectId);
       if (subproject) {
-      onSubprojectSelect(subprojectId);
+        onSubprojectSelect(subprojectId);
         setSubprojectSearch(subproject.name);
         setShowSubprojectDropdown(false);
         setSubprojectDropdownSearch('');
@@ -223,10 +266,10 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
       });
     });
     
-    // Sort by usage count and take top 5
+    // Sort by usage count and take top 6
     return allCombinations
       .sort((a, b) => b.usageCount - a.usageCount)
-      .slice(0, 5)
+      .slice(0, 6)
       .map(({ project, subproject }) => ({ project, subproject }));
   }, [allProjects, combinationUsageCount]);
 
@@ -309,8 +352,6 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
         (e.target as HTMLInputElement).blur();
         // Focus the main project search input after selection
         projectInputRef.current?.focus();
-        // Do NOT reset project/subproject selection or search fields here
-        // Do NOT start timer on Enter or Tab
       }
       e.preventDefault();
     }
@@ -336,9 +377,9 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
         }
         
         if (isTimerRunning) {
-          // Stop the timer
-          if (stopwatchRef?.current?.handleStop) {
-            stopwatchRef.current.handleStop();
+          // Stop the timer - use handleStartStop to toggle
+          if (stopwatchRef?.current?.handleStartStop) {
+            stopwatchRef.current.handleStartStop();
           }
         } else {
           // Start the timer
@@ -516,138 +557,200 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
         </div>
       </div>
 
-      {/* Most Frequent Projects */}
-      {frequentProjects.length > 0 && (
-        <div className="flex flex-col items-start bg-white rounded-2xl shadow-md p-6 mb-8 w-full -mx-2" style={{ minHeight: '180px' }}>
-          <h3 className="text-base font-semibold text-gray-900 mb-4 uppercase tracking-wider">Most Frequent Projects</h3>
-          <div className="flex flex-wrap gap-4 w-full">
-            {frequentProjects.map((project) => {
-              const isSelected = selectedProjectId === project.id;
-              const color = colorCodedProjectsEnabled ? generateProjectColor(project.name) : undefined;
-              return (
-                <button
-                  key={project.id}
-                  onClick={() => handleProjectSelect(project.id)}
-                  style={
-                    isSelected
-                      ? { background: '#18181b', color: '#fff' }
-                      : colorCodedProjectsEnabled
-                        ? { background: color, color: '#18181b' }
-                        : undefined
-                  }
-                  className={`px-6 py-3 rounded-full text-base font-medium transition-all duration-200 ${
-                    isSelected
-                      ? 'bg-gray-900 text-white shadow-md'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-sm'
-                  }`}
-                >
-                  {project.name}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Most Frequent Subprojects */}
-      {frequentSubprojectsEnabled && frequentSubprojects.length > 0 && (
-        <div className="flex flex-col items-start bg-white rounded-2xl shadow-md p-6 mb-8 w-full -mx-2" style={{ minHeight: '180px' }}>
-          <h3 className="text-base font-semibold text-gray-900 mb-4 uppercase tracking-wider">Most Frequent Subprojects</h3>
-          <div className="flex flex-wrap gap-4 w-full">
-            {frequentSubprojects.map((subproject) => {
-              const isSelected = selectedSubprojectId === subproject.id;
-              // Find the parent project for color
-              const parentProject = allProjects.find(p => p.subprojects.some(s => s.id === subproject.id));
-              const color = colorCodedProjectsEnabled && parentProject ? generateProjectColor(parentProject.name) : undefined;
-              return (
-                <button
-                  key={subproject.id}
-                  onClick={() => handleSubprojectSelect(subproject.id)}
-                  style={
-                    isSelected
-                      ? { background: '#18181b', color: '#fff' }
-                      : colorCodedProjectsEnabled && color
-                        ? { background: color, color: '#18181b' }
-                        : undefined
-                  }
-                  className={`px-6 py-3 rounded-full text-base font-medium transition-all duration-200 ${
-                    isSelected
-                      ? 'bg-gray-900 text-white shadow-md'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-sm'
-                  }`}
-                >
-                  {subproject.name}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Most Frequent Combinations */}
-      {frequentCombinations.length > 0 && (
-        <div className="flex flex-col items-start bg-white rounded-2xl shadow-md p-6 w-full mb-8 -mx-2" style={{ minHeight: 0 }}>
-          <h3 className="text-base font-semibold text-gray-900 mb-4 uppercase tracking-wider">Quick Start Combinations</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-            {frequentCombinations.slice(0, 6).map((combination, index) => {
-              const isSelected =
-                pendingQuickStart &&
-                pendingQuickStart.project.id === combination.project.id &&
-                pendingQuickStart.subproject.id === combination.subproject.id;
-              const color = colorCodedProjectsEnabled ? generateProjectColor(combination.project.name) : undefined;
-              return (
-                <button
-                  key={index}
-                  onClick={() => {
-                    if (isSelected) {
-                      if (typeof handleStartNewTimerForProject === 'function') {
-                        handleStartNewTimerForProject(combination.project.id, combination.subproject.id);
-                      } else {
-                        handleProjectSelect(combination.project.id);
-                        setTimeout(() => handleSubprojectSelect(combination.subproject.id, combination.project), 0);
+      {/* Dynamic Container for Projects/Subprojects */}
+      <div className="w-full mb-8 -mx-2 border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-md" style={{ minHeight: '220px' }}>
+        {/* Most Frequent Projects */}
+        {frequentProjects.length > 0 && !selectedProjectId && (
+          <div className="transition-all duration-500 ease-in-out">
+            <div className="bg-gray-300 px-6 py-3 rounded-t-xl">
+              <h3 className="text-lg font-bold text-gray-900 tracking-wider">Most Frequent Projects</h3>
+            </div>
+            <div className="p-3 h-full">
+              <div className="grid grid-cols-3 gap-3 w-full h-full">
+                {frequentProjects.map((project) => {
+                  const isSelected = selectedProjectId === project.id;
+                  const color = colorCodedProjectsEnabled ? generateProjectColor(project.name) : undefined;
+                  return (
+                    <button
+                      key={project.id}
+                      onClick={() => handleProjectSelect(project.id)}
+                      style={
+                        isSelected
+                          ? { background: '#18181b', color: '#fff' }
+                          : colorCodedProjectsEnabled
+                            ? { background: color, color: '#18181b' }
+                            : undefined
                       }
-                      setPendingQuickStart(null);
-                    } else {
-                      setPendingQuickStart({ project: combination.project, subproject: combination.subproject, index });
-                      handleProjectSelect(combination.project.id);
-                      handleSubprojectSelect(combination.subproject.id, combination.project);
+                      className={`w-full px-2 py-5 rounded-full text-base font-medium transition-all duration-200 text-center ${
+                        isSelected
+                          ? 'bg-gray-900 text-white shadow-md'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-sm'
+                      }`}
+                    >
+                      {project.name}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Most Frequent Subprojects */}
+        {frequentSubprojectsEnabled && frequentSubprojects.length > 0 && selectedProjectId && !selectedSubprojectId && (
+          <div className="transition-all duration-500 ease-in-out">
+            <div className="bg-gray-300 px-6 py-3 rounded-t-xl flex items-center justify-between">
+              <h3 className="text-lg font-bold text-gray-900 tracking-wider">Most Frequent Subprojects</h3>
+              <button
+                onClick={() => {
+                  onProjectSelect('');
+                  onSubprojectSelect('');
+                }}
+                className="px-3 py-1 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded-md transition-all duration-200 flex items-center gap-1"
+              >
+                <ChevronDown className="w-4 h-4 rotate-90" />
+                Back to Projects
+              </button>
+            </div>
+            <div className="p-3 h-full">
+              <div className="grid grid-cols-3 gap-3 w-full h-full">
+                {frequentSubprojects.map((subproject) => {
+                  const isSelected = selectedSubprojectId === subproject.id;
+                  // Find the parent project for color
+                  const parentProject = allProjects.find(p => p.subprojects.some(s => s.id === subproject.id));
+                  const color = colorCodedProjectsEnabled && parentProject ? generateProjectColor(parentProject.name) : undefined;
+                  return (
+                    <button
+                      key={subproject.id}
+                      onClick={() => handleSubprojectSelect(subproject.id)}
+                      style={
+                        isSelected
+                          ? { background: '#18181b', color: '#fff' }
+                          : colorCodedProjectsEnabled && color
+                            ? { background: color, color: '#18181b' }
+                            : undefined
+                      }
+                      className={`w-full px-2 py-5 rounded-full text-base font-medium transition-all duration-200 text-center ${
+                        isSelected
+                          ? 'bg-gray-900 text-white shadow-md'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-sm'
+                      }`}
+                    >
+                      {subproject.name}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Back to Projects after Subproject Selection */}
+        {frequentProjects.length > 0 && selectedProjectId && selectedSubprojectId && (
+          <div className="transition-all duration-500 ease-in-out">
+            <div className="bg-gray-300 px-6 py-3 rounded-t-xl">
+              <h3 className="text-lg font-bold text-gray-900 tracking-wider">Most Frequent Projects</h3>
+            </div>
+            <div className="p-3 h-full">
+              <div className="grid grid-cols-3 gap-3 w-full h-full">
+                {frequentProjects.map((project) => {
+                  const isSelected = selectedProjectId === project.id;
+                  const color = colorCodedProjectsEnabled ? generateProjectColor(project.name) : undefined;
+                  return (
+                    <button
+                      key={project.id}
+                      onClick={() => handleProjectSelect(project.id)}
+                      style={
+                        isSelected
+                          ? { background: '#18181b', color: '#fff' }
+                          : colorCodedProjectsEnabled
+                            ? { background: color, color: '#18181b' }
+                            : undefined
+                      }
+                      className={`w-full px-2 py-5 rounded-full text-base font-medium transition-all duration-200 text-center ${
+                        isSelected
+                          ? 'bg-gray-900 text-white shadow-md'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-sm'
+                      }`}
+                    >
+                      {project.name}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Quick Start Combinations */}
+      {frequentCombinations.length > 0 && (
+        <div className="w-full mb-8 -mx-2 border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-md">
+          <div className="bg-gray-300 px-6 py-3 rounded-t-xl">
+            <h3 className="text-lg font-bold text-gray-900 tracking-wider">Quick Start Combinations</h3>
+          </div>
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+              {frequentCombinations.map((combination, index) => {
+                const isSelected =
+                  pendingQuickStart &&
+                  pendingQuickStart.project.id === combination.project.id &&
+                  pendingQuickStart.subproject.id === combination.subproject.id;
+                const color = colorCodedProjectsEnabled ? generateProjectColor(combination.project.name) : undefined;
+                return (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      if (isSelected) {
+                        if (typeof handleStartNewTimerForProject === 'function') {
+                          handleStartNewTimerForProject(combination.project.id, combination.subproject.id);
+                        } else {
+                          handleProjectSelect(combination.project.id);
+                          setTimeout(() => handleSubprojectSelect(combination.subproject.id, combination.project), 0);
+                        }
+                        setPendingQuickStart(null);
+                      } else {
+                        setPendingQuickStart({ project: combination.project, subproject: combination.subproject, index });
+                        handleProjectSelect(combination.project.id);
+                        handleSubprojectSelect(combination.subproject.id, combination.project);
+                      }
+                    }}
+                    style={
+                      isSelected
+                        ? { background: '#18181b', color: '#fff' }
+                        : colorCodedProjectsEnabled
+                          ? { background: color, color: '#18181b' }
+                          : undefined
                     }
-                  }}
-                  style={
-                    isSelected
-                      ? { background: '#18181b', color: '#fff' }
-                      : colorCodedProjectsEnabled
-                        ? { background: color, color: '#18181b' }
-                        : undefined
-                  }
-                  className={`group flex items-center justify-between w-full h-full p-4 rounded-lg transition-all duration-200 border border-transparent focus:outline-none focus:ring-2 focus:ring-black ${
-                    isSelected
-                      ? 'bg-black shadow-lg'
-                      : 'bg-gray-50 hover:bg-gray-100 hover:shadow-md hover:border-gray-200'
-                  }`}
-                >
-                  {isSelected ? (
-                    <span className="text-white text-base font-medium w-full text-center transition-colors duration-300">
-                      Tap to start timer for {combination.project.name} - {combination.subproject.name}
-                    </span>
-                  ) : (
-                    <>
-                      <div className="flex flex-col items-start">
-                        <span className="text-sm font-semibold group-hover:text-gray-900">
-                          {combination.project.name}
-                        </span>
-                        <span className="text-xs font-normal group-hover:text-gray-700">
-                          {combination.subproject.name}
-                        </span>
-                      </div>
-                      <div className="ml-3 p-2 bg-white group-hover:bg-gray-900 rounded-full transition-all duration-200 shadow-sm">
-                        <Play size={14} className="text-gray-600 group-hover:text-white fill-current" />
-                      </div>
-                    </>
-                  )}
-                </button>
-              );
-            })}
+                    className={`group flex items-center justify-between w-full h-full p-4 rounded-lg transition-all duration-200 border border-transparent focus:outline-none focus:ring-2 focus:ring-black ${
+                      isSelected
+                        ? 'bg-black shadow-lg'
+                        : 'bg-gray-50 hover:bg-gray-100 hover:shadow-md hover:border-gray-200'
+                    }`}
+                  >
+                    {isSelected ? (
+                      <span className="text-white text-base font-medium w-full text-center transition-colors duration-300">
+                        Tap to start timer for {combination.project.name} - {combination.subproject.name}
+                      </span>
+                    ) : (
+                      <>
+                        <div className="flex flex-col items-start">
+                          <span className="text-sm font-semibold group-hover:text-gray-900">
+                            {combination.project.name}
+                          </span>
+                          <span className="text-xs font-normal group-hover:text-gray-700">
+                            {combination.subproject.name}
+                          </span>
+                        </div>
+                        <div className="ml-3 p-2 bg-white group-hover:bg-gray-900 rounded-full transition-all duration-200 shadow-sm">
+                          <Play size={14} className="text-gray-600 group-hover:text-white fill-current" />
+                        </div>
+                      </>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       )}
