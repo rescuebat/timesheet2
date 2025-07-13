@@ -130,6 +130,12 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
     }
   }, [selectedSubproject]);
 
+  useEffect(() => {
+    // When the main project changes, reset subproject search fields
+    setSubprojectSearch('');
+    setSubprojectDropdownSearch('');
+  }, [selectedProjectId]);
+
   const handleProjectSelect = useCallback((projectId: string) => {
     const project = allProjects.find(p => p.id === projectId);
     if (project) {
@@ -191,7 +197,7 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
 
   const filteredProjects = React.useMemo(() => 
     allProjects.filter(project =>
-      project.name.toLowerCase().includes(projectDropdownSearch.toLowerCase())
+      project.name.toLowerCase().startsWith(projectDropdownSearch.toLowerCase())
     ), [allProjects, projectDropdownSearch]);
 
   const filteredSubprojects = React.useMemo(() => 
@@ -258,18 +264,54 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
   // Add a ref for the main project input
   const projectInputRef = React.useRef<HTMLInputElement>(null);
 
+  // Keyboard navigation state for project dropdown
+  const [projectDropdownIndex, setProjectDropdownIndex] = useState<number>(-1);
+
   // Global keydown handler for Enter
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Enter' && !isTimerRunning) {
-        projectInputRef.current?.focus();
+        setProjectSearch('');
+        onProjectSelect(''); // Deselect any project
         setShowProjectDropdown(true);
+        setProjectDropdownIndex(-1);
+        projectInputRef.current?.focus();
         e.preventDefault();
       }
     };
     window.addEventListener('keydown', handleGlobalKeyDown);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
-  }, [isTimerRunning]);
+  }, [isTimerRunning, onProjectSelect]);
+
+  // Handle keyboard navigation in project dropdown
+  const handleProjectInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!showProjectDropdown) return;
+    if (e.key === 'ArrowDown') {
+      setProjectDropdownIndex((prev) => Math.min(prev + 1, filteredProjects.length - 1));
+      e.preventDefault();
+    } else if (e.key === 'ArrowUp') {
+      setProjectDropdownIndex((prev) => Math.max(prev - 1, 0));
+      e.preventDefault();
+    } else if ((e.key === 'Enter' || e.key === 'Tab') && projectDropdownIndex >= 0) {
+      const project = filteredProjects[projectDropdownIndex];
+      if (project) {
+        handleProjectSelect(project.id);
+        setShowProjectDropdown(false);
+        setProjectDropdownIndex(-1);
+        // Move focus to subproject input after selection
+        setTimeout(() => {
+          const subInput = document.querySelector('input[placeholder="Search for subproject"]') as HTMLInputElement;
+          if (subInput) subInput.focus();
+        }, 0);
+      }
+      e.preventDefault();
+    }
+  };
+
+  // Reset highlight when search changes
+  useEffect(() => {
+    setProjectDropdownIndex(-1);
+  }, [projectSearch, showProjectDropdown]);
 
   return (
     <div className="w-full h-full flex flex-col">
@@ -282,8 +324,12 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
               type="text"
               placeholder="Search for main project"
               value={projectSearch}
-              onChange={(e) => setProjectSearch(e.target.value)}
+              onChange={(e) => {
+                setProjectSearch(e.target.value);
+                setProjectDropdownSearch(e.target.value);
+              }}
               onClick={() => setShowProjectDropdown(true)}
+              onKeyDown={handleProjectInputKeyDown}
               className="w-full px-5 py-4 pr-12 text-white bg-gray-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-400 transition-all duration-200 text-base font-medium placeholder-gray-400"
             />
             <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white">
@@ -295,11 +341,11 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
             <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-10">
               <div className="max-h-48 overflow-y-auto">
                 {filteredProjects.length > 0 ? (
-                  filteredProjects.map((project) => (
+                  filteredProjects.map((project, idx) => (
                     <div
                       key={project.id}
                       onClick={() => handleProjectSelect(project.id)}
-                      className="px-4 py-3 text-sm text-gray-900 hover:bg-gray-50 cursor-pointer transition-colors duration-150"
+                      className={`px-4 py-3 text-sm text-gray-900 hover:bg-gray-50 cursor-pointer transition-colors duration-150${projectDropdownIndex === idx ? ' bg-gray-200 font-semibold' : ''}`}
                     >
                       {project.name}
                     </div>
@@ -319,8 +365,12 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
               type="text"
               placeholder="Search for subproject"
               value={subprojectSearch}
-              onChange={(e) => setSubprojectSearch(e.target.value)}
+              onChange={(e) => {
+                setSubprojectSearch(e.target.value);
+                setSubprojectDropdownSearch(e.target.value);
+              }}
               onClick={() => setShowSubprojectDropdown(true)}
+              onFocus={() => setShowSubprojectDropdown(true)}
               className="w-full px-5 py-4 pr-12 text-white bg-gray-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-400 transition-all duration-200 text-base font-medium placeholder-gray-400"
             />
             <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white">

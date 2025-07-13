@@ -159,6 +159,14 @@ const getDefaultProjects = (): Project[] => [
   }
 ];
 
+// When loading projects from storage, ensure subprojects is always an array
+function normalizeProjects(projects: any[]): Project[] {
+  return projects.map(project => ({
+    ...project,
+    subprojects: Array.isArray(project.subprojects) ? project.subprojects : []
+  }));
+}
+
 export const useProjectManagement = () => {
   const [projects, setProjects] = useState<Project[]>([]);
 
@@ -175,7 +183,7 @@ export const useProjectManagement = () => {
       setProjects(defaultProjects);
     } else {
       console.log('useProjectManagement - using existing projects');
-      setProjects(loadedProjects);
+      setProjects(normalizeProjects(loadedProjects));
     }
   }, []);
 
