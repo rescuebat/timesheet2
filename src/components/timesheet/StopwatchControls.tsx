@@ -21,7 +21,7 @@ const StopwatchControls: React.FC<StopwatchControlsProps> = ({
   onPause,
   onStop
 }) => {
-  const buttonBaseStyle = "relative h-14 px-8 rounded-2xl font-medium text-lg transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none";
+  const buttonBaseStyle = "relative h-14 px-8 rounded-2xl font-medium text-lg font-sans transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none";
   const minWidth = { minWidth: '140px' };
 
   return (

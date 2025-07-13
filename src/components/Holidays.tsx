@@ -311,7 +311,7 @@ const PersonalJournal: React.FC = React.memo(() => {
   }, [entries]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white text-black p-6 font-sans" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white text-black p-6 font-sans">
       <style>
         {`
           .task-completed {

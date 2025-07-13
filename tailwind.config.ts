@@ -69,6 +69,9 @@ export default {
 				warning: 'hsl(var(--warning))',
 				info: 'hsl(var(--info))'
 			},
+			fontFamily: {
+				sans: ['Noto Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+			},
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',

@@ -61,7 +61,7 @@ const WeeklyTimesheet: React.FC<WeeklyTimesheetProps> = ({ timeLogs, onUpdateTim
   };
 
   return (
-    <div className="space-y-6 animate-fade-in font-sans" style={{ fontFamily: "'Noto Sans', sans-serif" }}>
+    <div className="space-y-6 animate-fade-in font-sans">
       <WeeklySummaryCard
         dateRange={dateRange}
         daysInRange={daysInRange}
