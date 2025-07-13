@@ -190,16 +190,16 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
     }
   }, [allProjects, onProjectSelect]);
 
-  const handleSubprojectSelect = useCallback((subprojectId: string) => {
-    if (selectedProject) {
-      const subproject = selectedProject.subprojects.find(s => s.id === subprojectId);
+  // Update handleSubprojectSelect to accept an optional project argument
+  const handleSubprojectSelect = useCallback((subprojectId: string, projectOverride?: Project) => {
+    const projectToUse = projectOverride || selectedProject;
+    if (projectToUse) {
+      const subproject = projectToUse.subprojects.find(s => s.id === subprojectId);
       if (subproject) {
         onSubprojectSelect(subprojectId);
         setSubprojectSearch(subproject.name);
         setShowSubprojectDropdown(false);
         setSubprojectDropdownSearch('');
-        
-        // Track usage
         setSubprojectUsageCount(prev => ({
           ...prev,
           [subprojectId]: (prev[subprojectId] || 0) + 1
@@ -425,7 +425,27 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
             {frequentCombinations.map((combination, index) => (
               <button
                 key={index}
-                onClick={() => handleCombinationClick(combination.project, combination.subproject, index)}
+                onClick={() => {
+                  if (
+                    pendingQuickStart &&
+                    pendingQuickStart.project.id === combination.project.id &&
+                    pendingQuickStart.subproject.id === combination.subproject.id
+                  ) {
+                    // Second click: confirm and start timer
+                    if (typeof handleStartNewTimerForProject === 'function') {
+                      handleStartNewTimerForProject(combination.project.id, combination.subproject.id);
+                    } else {
+                      handleProjectSelect(combination.project.id);
+                      setTimeout(() => handleSubprojectSelect(combination.subproject.id, combination.project), 0);
+                    }
+                    setPendingQuickStart(null);
+                  } else {
+                    // First click: show confirmation on this button and clear selection
+                    setPendingQuickStart({ project: combination.project, subproject: combination.subproject, index });
+                    handleProjectSelect(combination.project.id);
+                    handleSubprojectSelect(combination.subproject.id, combination.project);
+                  }
+                }}
                 className={`group flex items-center justify-between w-full h-full p-4 rounded-lg transition-all duration-200 border border-transparent focus:outline-none focus:ring-2 focus:ring-black ${pendingQuickStart && pendingQuickStart.project.id === combination.project.id && pendingQuickStart.subproject.id === combination.subproject.id ? 'bg-black shadow-lg' : 'bg-gray-50 hover:bg-gray-100 hover:shadow-md hover:border-gray-200'}`}
                 style={{ minHeight: '80px' }}
               >
