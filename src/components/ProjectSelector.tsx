@@ -271,16 +271,16 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
   return (
     <div className="w-full h-full flex flex-col">
       {/* Search Bars */}
-      <div className="flex gap-3 mb-6">
+      <div className="flex gap-4 mb-8">
         <div className="flex-1 relative">
           <div className="relative">
-                                     <input
+            <input
               type="text"
               placeholder="Search for main project"
               value={projectSearch}
               onChange={(e) => setProjectSearch(e.target.value)}
               onClick={() => setShowProjectDropdown(true)}
-              className="w-full px-4 py-3 pr-12 text-white bg-gray-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-400 transition-all duration-200 text-sm font-medium placeholder-gray-400"
+              className="w-full px-5 py-4 pr-12 text-white bg-gray-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-400 transition-all duration-200 text-base font-medium placeholder-gray-400"
             />
             <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white">
               <Search size={24} strokeWidth={2} />
@@ -330,7 +330,7 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
               value={subprojectSearch}
               onChange={(e) => setSubprojectSearch(e.target.value)}
               onClick={() => setShowSubprojectDropdown(true)}
-              className="w-full px-4 py-3 pr-12 text-white bg-gray-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-400 transition-all duration-200 text-sm font-medium placeholder-gray-400"
+              className="w-full px-5 py-4 pr-12 text-white bg-gray-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-400 transition-all duration-200 text-base font-medium placeholder-gray-400"
             />
             <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white">
               <Search size={20} strokeWidth={2} />
@@ -375,14 +375,14 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
 
       {/* Most Frequent Projects */}
       {frequentProjects.length > 0 && (
-        <div className="mb-6">
-          <h3 className="text-sm font-semibold text-gray-900 mb-3 uppercase tracking-wider">Most Frequent Projects</h3>
-          <div className="flex flex-wrap gap-3">
+        <div className="mb-8">
+          <h3 className="text-base font-semibold text-gray-900 mb-4 uppercase tracking-wider">Most Frequent Projects</h3>
+          <div className="flex flex-wrap gap-4">
             {frequentProjects.map((project) => (
               <button
                 key={project.id}
                 onClick={() => handleProjectSelect(project.id)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                className={`px-6 py-3 rounded-full text-base font-medium transition-all duration-200 ${
                   selectedProjectId === project.id
                     ? 'bg-gray-900 text-white shadow-md'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-sm'
@@ -397,14 +397,14 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
 
       {/* Most Frequent Subprojects */}
       {frequentSubprojectsEnabled && frequentSubprojects.length > 0 && (
-        <div className="mb-6">
-          <h3 className="text-sm font-semibold text-gray-900 mb-3 uppercase tracking-wider">Most Frequent Subprojects</h3>
-          <div className="flex flex-wrap gap-3">
+        <div className="mb-8">
+          <h3 className="text-base font-semibold text-gray-900 mb-4 uppercase tracking-wider">Most Frequent Subprojects</h3>
+          <div className="flex flex-wrap gap-4">
             {frequentSubprojects.map((subproject) => (
               <button
                 key={subproject.id}
                 onClick={() => handleSubprojectSelect(subproject.id)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                className={`px-6 py-3 rounded-full text-base font-medium transition-all duration-200 ${
                   selectedSubprojectId === subproject.id
                     ? 'bg-gray-900 text-white shadow-md'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-sm'
@@ -420,31 +420,31 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
       {/* Most Frequent Combinations */}
       {frequentCombinations.length > 0 && (
         <div className="flex-1">
-          <h3 className="text-sm font-semibold text-gray-900 mb-3 uppercase tracking-wider">Quick Start Combinations</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <h3 className="text-base font-semibold text-gray-900 mb-4 uppercase tracking-wider">Quick Start Combinations</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {frequentCombinations.map((combination, index) => (
               <button
                 key={index}
                 onClick={() => handleCombinationClick(combination.project, combination.subproject, index)}
-                className={`group flex items-center justify-between w-full h-full p-3 rounded-lg transition-all duration-200 border border-transparent focus:outline-none focus:ring-2 focus:ring-black ${pendingQuickStart && pendingQuickStart.project.id === combination.project.id && pendingQuickStart.subproject.id === combination.subproject.id ? 'bg-black shadow-lg' : 'bg-gray-50 hover:bg-gray-100 hover:shadow-md hover:border-gray-200'}`}
-                style={{ minHeight: '64px' }}
+                className={`group flex items-center justify-between w-full h-full p-4 rounded-lg transition-all duration-200 border border-transparent focus:outline-none focus:ring-2 focus:ring-black ${pendingQuickStart && pendingQuickStart.project.id === combination.project.id && pendingQuickStart.subproject.id === combination.subproject.id ? 'bg-black shadow-lg' : 'bg-gray-50 hover:bg-gray-100 hover:shadow-md hover:border-gray-200'}`}
+                style={{ minHeight: '80px' }}
               >
                 {pendingQuickStart && pendingQuickStart.project.id === combination.project.id && pendingQuickStart.subproject.id === combination.subproject.id ? (
-                  <span className="text-white text-sm font-medium w-full text-center transition-colors duration-300">
+                  <span className="text-white text-base font-medium w-full text-center transition-colors duration-300">
                     Tap to start timer for {combination.project.name} - {combination.subproject.name}
                   </span>
                 ) : (
                   <>
                     <div className="flex flex-col items-start">
-                      <span className="text-xs font-semibold text-gray-900 group-hover:text-gray-900">
+                      <span className="text-sm font-semibold text-gray-900 group-hover:text-gray-900">
                         {combination.project.name}
                       </span>
-                      <span className="text-[10px] text-gray-600 group-hover:text-gray-700 font-normal">
+                      <span className="text-xs text-gray-600 group-hover:text-gray-700 font-normal">
                         {combination.subproject.name}
                       </span>
                     </div>
-                    <div className="ml-2 p-1.5 bg-white group-hover:bg-gray-900 rounded-full transition-all duration-200 shadow-sm">
-                      <Play size={12} className="text-gray-600 group-hover:text-white fill-current" />
+                    <div className="ml-3 p-2 bg-white group-hover:bg-gray-900 rounded-full transition-all duration-200 shadow-sm">
+                      <Play size={14} className="text-gray-600 group-hover:text-white fill-current" />
                     </div>
                   </>
                 )}
