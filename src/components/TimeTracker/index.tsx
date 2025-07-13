@@ -161,6 +161,7 @@ const TimeTracker = () => {
     const handleTimerStopped = () => {
         setSelectedProjectId('');
         setSelectedSubprojectId('');
+        projectSelectorRef.current?.clearSelection();
     };
 
     // Ensure only one timer runs at a time, pause and queue previous if needed

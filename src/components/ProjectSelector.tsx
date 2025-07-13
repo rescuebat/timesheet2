@@ -37,6 +37,7 @@ export interface ProjectSelectorRef {
   selectSubproject: (direction: 'up' | 'down') => void;
   confirmProjectSelection: () => void;
   confirmSubprojectSelection: () => void;
+  clearSelection: () => void;
 }
 
 // ========== Main Component ==========
@@ -267,6 +268,37 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
       .slice(0, 5)
       .map(({ project, subproject }) => ({ project, subproject }));
   }, [allProjects, combinationUsageCount]);
+
+  useImperativeHandle(ref, () => ({
+    focusProjectSearch: () => {
+      // This method is not implemented in the current component,
+      // but it's part of the interface.
+    },
+    focusSubprojectSearch: () => {
+      // This method is not implemented in the current component,
+      // but it's part of the interface.
+    },
+    selectProject: (direction: 'up' | 'down') => {
+      // This method is not implemented in the current component,
+      // but it's part of the interface.
+    },
+    selectSubproject: (direction: 'up' | 'down') => {
+      // This method is not implemented in the current component,
+      // but it's part of the interface.
+    },
+    confirmProjectSelection: () => {
+      // This method is not implemented in the current component,
+      // but it's part of the interface.
+    },
+    confirmSubprojectSelection: () => {
+      // This method is not implemented in the current component,
+      // but it's part of the interface.
+    },
+    clearSelection: () => {
+      setProjectSearch('');
+      setSubprojectSearch('');
+    }
+  }));
 
   return (
     <div className="w-full h-full flex flex-col">
