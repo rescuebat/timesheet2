@@ -589,7 +589,7 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
               <h3 className="text-lg font-bold text-gray-900 tracking-wider">Most Frequent Projects</h3>
             </div>
             <div className="p-3 h-full">
-              <div className="grid grid-cols-3 gap-3 w-full h-full">
+              <div className="grid grid-cols-3 gap-0 w-full h-full">
                 {frequentProjects.map((project) => {
                   const isSelected = selectedProjectId === project.id;
                   const color = colorCodedProjectsEnabled ? generateProjectColor(project.name) : undefined;
@@ -604,10 +604,10 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
                             ? { background: color, color: '#18181b' }
                             : undefined
                       }
-                      className={`w-full px-2 py-5 rounded-full text-base font-medium transition-all duration-200 text-center ${
+                      className={`w-full h-full px-2 py-5 text-base font-medium transition-all duration-200 text-center ${
                         isSelected
                           ? 'bg-gray-900 text-white shadow-md'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-sm'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-sm border border-gray-200'
                       }`}
                     >
                       {project.name}
@@ -636,7 +636,7 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
               </button>
             </div>
             <div className="p-3 h-full">
-              <div className="grid grid-cols-3 gap-3 w-full h-full">
+              <div className="grid grid-cols-3 gap-0 w-full h-full">
                 {frequentSubprojects.map((subproject) => {
                   const isSelected = selectedSubprojectId === subproject.id;
                   // Find the parent project for color
@@ -653,10 +653,10 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
                             ? { background: color, color: '#18181b' }
                             : undefined
                       }
-                      className={`w-full px-2 py-5 rounded-full text-base font-medium transition-all duration-200 text-center ${
+                      className={`w-full h-full px-2 py-5 text-base font-medium transition-all duration-200 text-center ${
                         isSelected
                           ? 'bg-gray-900 text-white shadow-md'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-sm'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-sm border border-gray-200'
                       }`}
                     >
                       {subproject.name}
@@ -690,10 +690,10 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
                             ? { background: color, color: '#18181b' }
                             : undefined
                       }
-                      className={`w-full px-2 py-5 rounded-full text-base font-medium transition-all duration-200 text-center ${
+                      className={`w-full h-full px-2 py-5 text-base font-medium transition-all duration-200 text-center ${
                         isSelected
                           ? 'bg-gray-900 text-white shadow-md'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-sm'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-sm border border-gray-200'
                       }`}
                     >
                       {project.name}
@@ -713,7 +713,7 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
             <h3 className="text-lg font-bold text-gray-900 tracking-wider">Quick Start Combinations</h3>
           </div>
           <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-0 w-full h-full">
               {frequentCombinations.map((combination, index) => {
                 const isSelected =
                   pendingQuickStart &&
@@ -745,10 +745,10 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
                           ? { background: color, color: '#18181b' }
                           : undefined
                     }
-                    className={`group flex items-center justify-between w-full h-full p-4 rounded-lg transition-all duration-200 border border-transparent focus:outline-none focus:ring-2 focus:ring-black ${
+                    className={`group flex items-center justify-between w-full h-full p-4 transition-all duration-200 border focus:outline-none focus:ring-2 focus:ring-black ${
                       isSelected
-                        ? 'bg-black shadow-lg'
-                        : 'bg-gray-50 hover:bg-gray-100 hover:shadow-md hover:border-gray-200'
+                        ? 'bg-black shadow-lg border-black'
+                        : 'bg-gray-50 hover:bg-gray-100 hover:shadow-md border-gray-200'
                     }`}
                   >
                     {isSelected ? (

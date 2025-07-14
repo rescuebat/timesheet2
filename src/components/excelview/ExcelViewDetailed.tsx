@@ -20,6 +20,19 @@ const ExcelViewDetailed: React.FC<ExcelViewDetailedProps> = ({
   const [colorCodedEnabled, setColorCodedEnabled] = useState(() => {
     return isColorCodedProjectsEnabled();
   });
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Listen for new time log entries
+  useEffect(() => {
+    const handleTimeLogAdded = () => {
+      setRefreshKey(prev => prev + 1);
+    };
+
+    window.addEventListener('timeLogAdded', handleTimeLogAdded);
+    return () => {
+      window.removeEventListener('timeLogAdded', handleTimeLogAdded);
+    };
+  }, []);
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);

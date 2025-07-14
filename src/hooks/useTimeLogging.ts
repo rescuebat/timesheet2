@@ -44,6 +44,10 @@ export const useTimeLogging = () => {
     };
 
     setTimeLogs(prev => [newTimeLog, ...prev]);
+    
+    // Trigger a storage event to notify other components
+    window.dispatchEvent(new CustomEvent('timeLogAdded', { detail: newTimeLog }));
+    
     return newTimeLog;
   }, []);
 
