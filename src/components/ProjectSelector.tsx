@@ -589,7 +589,7 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
               <h3 className="text-lg font-bold text-gray-900 tracking-wider">Most Frequent Projects</h3>
             </div>
             <div className="p-3 h-full">
-              <div className="grid grid-cols-3 gap-0 w-full h-full">
+              <div className="grid grid-cols-1 gap-0 w-full h-full">
                 {frequentProjects.map((project) => {
                   const isSelected = selectedProjectId === project.id;
                   const color = colorCodedProjectsEnabled ? generateProjectColor(project.name) : undefined;
@@ -604,13 +604,17 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
                             ? { background: color, color: '#18181b' }
                             : undefined
                       }
-                      className={`w-full h-full px-2 py-5 text-base font-medium transition-all duration-200 text-center ${
+                      className={`group flex items-center justify-between w-full h-full p-4 transition-all duration-200 border focus:outline-none focus:ring-2 focus:ring-black ${
                         isSelected
-                          ? 'bg-gray-900 text-white shadow-md'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-sm border border-gray-200'
+                          ? 'bg-black shadow-lg border-black'
+                          : 'bg-gray-50 hover:bg-gray-100 hover:shadow-md border-gray-200'
                       }`}
                     >
-                      {project.name}
+                      <div className="flex flex-col items-start">
+                        <span className="text-sm font-semibold group-hover:text-gray-900">
+                          {project.name}
+                        </span>
+                      </div>
                     </button>
                   );
                 })}
@@ -636,7 +640,7 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
               </button>
             </div>
             <div className="p-3 h-full">
-              <div className="grid grid-cols-3 gap-0 w-full h-full">
+              <div className="grid grid-cols-1 gap-0 w-full h-full">
                 {frequentSubprojects.map((subproject) => {
                   const isSelected = selectedSubprojectId === subproject.id;
                   // Find the parent project for color
@@ -653,13 +657,17 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
                             ? { background: color, color: '#18181b' }
                             : undefined
                       }
-                      className={`w-full h-full px-2 py-5 text-base font-medium transition-all duration-200 text-center ${
+                      className={`group flex items-center justify-between w-full h-full p-4 transition-all duration-200 border focus:outline-none focus:ring-2 focus:ring-black ${
                         isSelected
-                          ? 'bg-gray-900 text-white shadow-md'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-sm border border-gray-200'
+                          ? 'bg-black shadow-lg border-black'
+                          : 'bg-gray-50 hover:bg-gray-100 hover:shadow-md border-gray-200'
                       }`}
                     >
-                      {subproject.name}
+                      <div className="flex flex-col items-start">
+                        <span className="text-sm font-semibold group-hover:text-gray-900">
+                          {subproject.name}
+                        </span>
+                      </div>
                     </button>
                   );
                 })}
@@ -675,7 +683,7 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
               <h3 className="text-lg font-bold text-gray-900 tracking-wider">Most Frequent Projects</h3>
             </div>
             <div className="p-3 h-full">
-              <div className="grid grid-cols-3 gap-3 w-full h-full">
+              <div className="grid grid-cols-1 gap-0 w-full h-full">
                 {frequentProjects.map((project) => {
                   const isSelected = selectedProjectId === project.id;
                   const color = colorCodedProjectsEnabled ? generateProjectColor(project.name) : undefined;
@@ -690,13 +698,17 @@ const ProjectSelector = forwardRef<ProjectSelectorRef, ProjectSelectorProps>(({
                             ? { background: color, color: '#18181b' }
                             : undefined
                       }
-                      className={`w-full h-full px-2 py-5 text-base font-medium transition-all duration-200 text-center ${
+                      className={`group flex items-center justify-between w-full h-full p-4 transition-all duration-200 border focus:outline-none focus:ring-2 focus:ring-black ${
                         isSelected
-                          ? 'bg-gray-900 text-white shadow-md'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-sm border border-gray-200'
+                          ? 'bg-black shadow-lg border-black'
+                          : 'bg-gray-50 hover:bg-gray-100 hover:shadow-md border-gray-200'
                       }`}
                     >
-                      {project.name}
+                      <div className="flex flex-col items-start">
+                        <span className="text-sm font-semibold group-hover:text-gray-900">
+                          {project.name}
+                        </span>
+                      </div>
                     </button>
                   );
                 })}
